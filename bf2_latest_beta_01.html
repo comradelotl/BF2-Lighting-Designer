@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BF2 Lighting Designer</title>
+<style>
+  :root{
+    --bg:#15181c;
+    --panel:#1b1f24;
+    --line:#2a2f36;
+    --text:#e7e4dd;
+    --text-dim:#8b929b;
+    --sun:#e8963c;
+    --sun-dim:#5c4527;
+    --sky:#5b9bd1;
+    --sky-dim:#2a3f52;
+    --ground:#c9a876;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    padding:28px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  header{margin-bottom:22px;}
+  h1{
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 4px 0;
+    letter-spacing:0.2px;
+  }
+  header p{
+    margin:0;
+    color:var(--text-dim);
+    font-size:13.5px;
+    max-width:640px;
+    line-height:1.5;
+  }
+  .presets{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:18px 0 22px 0;
+  }
+  .preset-btn{
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:7px 13px;
+    border-radius:3px;
+    font-size:12.5px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .preset-btn:hover{border-color:var(--sun);}
+  .preset-btn.night:hover{border-color:var(--sky);}
+
+  .grid{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:20px;
+  }
+  @media (max-width:820px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px;
+  }
+  .section-label{
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:0.4px;
+    margin:0 0 14px 0;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .section-label.sun-c{color:var(--sun);}
+  .section-label.sky-c{color:var(--sky);}
+  .section-label.ground-c{color:var(--ground);}
+
+  .field{margin-bottom:10px;}
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0 12px;
+  }
+  .field-grid .field{grid-column:span 1;}
+  .field-grid .field.full{grid-column:1 / -1;}
+  .field label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    margin-bottom:6px;
+    color:var(--text);
+  }
+  .field label .val{color:var(--text-dim);font-family:var(--mono);font-size:11.5px;}
+  input[type=range]{
+    width:100%;
+    accent-color:var(--sun);
+    height:4px;
+  }
+  .field.sky-field input[type=range]{accent-color:var(--sky);}
+  .field.ground-field input[type=range]{accent-color:var(--ground);}
+
+  /* Hero "Time of day" control — full width, above the whole grid (left controls + derived
+     colors preview). Deliberately oversized: the time slider is the main dial of the tool,
+     so its track, step and readout get extra presence over the per-field controls below. */
+  .time-panel{
+    margin-bottom:15px;
+    padding:24px 24px 20px;
+  }
+  .time-panel .section-label{margin-bottom:16px;}
+  .time-panel input[type=range]{
+    width:100%;
+    height:6px;
+    accent-color:var(--sun);
+    font-size:14px; /* scales the native thumb up for grab-ability */
+    cursor:pointer;
+  }
+  .time-readouts{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-top:10px;
+  }
+  #v-time{
+    font-size:20px;
+    font-weight:600;
+    color:var(--sun);
+    font-family:var(--mono);
+    letter-spacing:0.5px;
+  }
+  #v-timeElev{font-size:12.5px;color:var(--text-dim);font-family:var(--mono);}
+
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    margin-top:6px;
+    color:var(--text-dim);
+  }
+  .checkbox-row input{accent-color:var(--sky);}
+
+  details{margin-top:10px;}
+  summary{
+    cursor:pointer;
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-bottom:10px;
+  }
+
+  .swatch-groups{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:600px){ .swatch-groups{grid-template-columns:1fr;} }
+
+  .swatch{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .swatch:last-child{border-bottom:none;}
+  .swatch .chip{
+    width:30px;height:30px;
+    border-radius:3px;
+    flex-shrink:0;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .swatch .info{overflow:hidden;}
+  .swatch .name{font-size:11.5px;color:var(--text);white-space:nowrap;}
+  .swatch .rgb{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);}
+
+  .group-title{
+    font-size:11px;
+    color:var(--text-dim);
+    margin:16px 0 6px 0;
+  }
+  .group-title:first-child{margin-top:0;}
+
+  .output-panel{margin-top:20px;}
+  .output-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .copy-btn{
+    background:var(--sun-dim);
+    color:var(--sun);
+    border:1px solid var(--sun);
+    padding:6px 14px;
+    border-radius:3px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .copy-btn:active{transform:translateY(1px);}
+  pre{
+    background:#101317;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    line-height:1.7;
+    color:#c9d6df;
+    overflow-x:auto;
+    margin:0;
+  }
+  pre .k{color:#7d8892;}
+  .note{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:10px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>BF2 Lighting Designer</h1>
+    <p>1.) Pick the ground color of the map (sand, grass, etc.).<br>
+    2.) Then input the Lightmanager.sunDirection y-value from the sky.con to receive the current sun angle. Dial in the time of day according to this and according to the sky texture.<br>
+    3.) Tune the rest to your liking and how it fits best. Copy-paste the results into the level's sky.con</p>
+  </header>
+
+  <div class="presets" id="presets"></div>
+
+  <div class="panel time-panel">
+    <p class="section-label sun-c">Time of day</p>
+    <input type="range" id="timeOfDay" min="0" max="24" step="0.01" value="12">
+    <div class="time-readouts">
+      <span id="v-time"></span>
+      <span id="v-timeElev"></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <p class="section-label ground-c">Ground</p>
+      <div class="field">
+        <label>Input ground base color</label>
+        <input type="color" id="groundAlbedo" value="#628257" style="width:100%;height:30px;border:1px solid var(--line);border-radius:3px;background:none;padding:2px;">
+      </div>
+      <div class="field ground-field">
+        <label>Influence on foliage <span class="val" id="v-groundBlend"></span></label>
+        <input type="range" id="groundBlend" min="0" max="1" step="0.01" value="1.0">
+      </div>
+      <div class="field ground-field">
+        <label>Ground elevation <span class="val" id="v-altitude"></span></label>
+        <input type="range" id="altitude" min="0" max="4000" step="50" value="200">
+      </div>
+
+      <p class="section-label sun-c" style="margin-top:20px;">Sun</p>
+      <div class="field">
+        <label>Get sun angle <span class="val" id="v-sunDirDeg"></span></label>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-bottom:5px;">Lightmanager.sunDirection</div>
+        <div style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:12px;color:var(--text-dim);">
+          <span>XXX/</span>
+          <input type="text" id="sunDirY" placeholder="YYY" style="width:33%;min-width:0;background:#101317;color:var(--text);border:1px solid var(--line);border-radius:3px;padding:5px 6px;font-family:var(--mono);font-size:12px;">
+          <span>/ZZZ</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Sun position (dawn ← noon → dusk) <span class="val" id="v-elevation"></span></label>
+        <input type="range" id="sunPos" min="-60" max="240" step="1" value="90">
+      </div>
+      <div class="field">
+        <label>Sun intensity <span class="val" id="v-intensity"></span></label>
+        <input type="range" id="intensity" min="0.3" max="2.5" step="0.01" value="1.45">
+      </div>
+
+      <p class="section-label sky-c" style="margin-top:20px;">Atmosphere</p>
+      <div class="field-grid">
+        <div class="field sky-field full">
+          <label>Air type</label>
+          <select id="aerosol" style="width:100%;background:#101317;color:var(--text);border:1px solid var(--line);border-radius:3px;padding:6px;font-size:12.5px;">
+            <option value="clean">Clean / alpine</option>
+            <option value="humid" selected>Humid / maritime</option>
+            <option value="dust">Dust / arid</option>
+            <option value="smoke">Smoke / volcanic</option>
+          </select>
+        </div>
+        <div class="field sky-field">
+          <label>Haze (turbidity) <span class="val" id="v-haze"></span></label>
+          <input type="range" id="haze" min="0" max="10" step="0.1" value="2.5">
+        </div>
+        <div class="field sky-field">
+          <label>Twilight tint (high altitude turbidity) <span class="val" id="v-stratoAerosol"></span></label>
+          <input type="range" id="stratoAerosol" min="0" max="1" step="0.01" value="0">
+        </div>
+        <div class="field sky-field">
+          <label>Cloud cover <span class="val" id="v-overcast"></span></label>
+          <input type="range" id="overcast" min="0" max="1" step="0.01" value="0">
+        </div>
+        <div class="field sky-field">
+          <label>Fog density (override) <span class="val" id="v-fogb"></span></label>
+          <input type="range" id="fogb" min="0.3" max="0.98" step="0.01" value="0.74">
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="moonlight" disabled>
+        <label for="moonlight">Moonlight present (automatic below -25&#176; sun elevation)</label>
+      </div>
+
+      <details>
+        <summary>Advanced</summary>
+        <div class="field">
+          <label>Shadow compensator (auto) <span class="val" id="v-giBounce"></span></label>
+          <input type="range" id="giBounce" min="0" max="0.1" step="0.001" value="0.1">
+        </div>
+        <div class="field">
+          <label>StaticMesh brightness <span class="val" id="v-staticI"></span></label>
+          <input type="range" id="staticI" min="0.4" max="1.0" step="0.01" value="1.0">
+        </div>
+        <div class="field">
+          <label>Terrain brightness <span class="val" id="v-terrainB"></span></label>
+          <input type="range" id="terrainB" min="0.6" max="1.6" step="0.01" value="1.0">
+        </div>
+      </details>
+    </div>
+
+    <div>
+      <div class="panel">
+        <p class="section-label">Derived colors</p>
+        <div class="swatch-groups">
+          <div>
+            <p class="group-title" style="color:var(--sun);">Direct Light</p>
+            <div id="grp-sun"></div>
+          </div>
+          <div>
+            <p class="group-title" style="color:var(--sky);">Indirect Light/ Shadows</p>
+            <div id="grp-sky"></div>
+            <p class="group-title">Fog (experimental)</p>
+            <div id="grp-fog"></div>
+            <p class="group-title" style="color:var(--text-dim);">dummy (unused in-game)</p>
+            <div id="grp-unused"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel output-panel">
+        <div class="output-head">
+          <p class="section-label" style="margin:0;border:none;padding:0;">Output to sky.con</p>
+          <button class="copy-btn" id="copyBtn">Copy</button>
+        </div>
+        <pre id="output"></pre>
+        <p class="note" id="ccNote"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- color science helpers ----------
+function kelvinToRGB(k){
+  const t = k/100;
+  let r,g,b;
+  r = t<=66 ? 255 : 329.698727446*Math.pow(t-60,-0.1332047592);
+  g = t<=66 ? 99.4708025861*Math.log(t)-161.1195681661 : 288.1221695283*Math.pow(t-60,-0.0755148492);
+  b = t>=66 ? 255 : (t<=19 ? 0 : 138.5177312231*Math.log(t-10)-305.0447927307);
+  const clamp=v=>Math.min(255,Math.max(0,v))/255;
+  return [clamp(r),clamp(g),clamp(b)];
+}
+function normMax1(c){
+  const m = Math.max(c[0],c[1],c[2]) || 1;
+  return [c[0]/m, c[1]/m, c[2]/m];
+}
+function lerp(a,b,t){ return a.map((v,i)=> v + (b[i]-v)*t ); }
+function mul(a,s){ return a.map(v=>v*s); }
+function desat(c,amount){
+  const g = (c[0]+c[1]+c[2])/3;
+  return lerp(c,[g,g,g],amount);
+}
+function clamp01(c){ return c.map(v=>Math.min(1,Math.max(0,v))); }
+// Dawn swap is a hue rotation only — magnitude attenuation below the horizon is now owned
+// entirely by effIntensity's own elevation fade (subHorizonFactor), not by this blend.
+// Previously the swap lerped raw color vectors toward a diffuse-light target, which leaked
+// that target's own magnitude into the direct-lit channel (the original sub-horizon
+// brightening artifact, then a capMag ceiling patched over it). Explicitly discarding the
+// target's magnitude and only borrowing its hue removes the leak at the source instead of
+// capping it after the fact: the swapped color can never end up brighter OR dimmer than the
+// source's own pre-swap magnitude, by construction.
+function hueSwap(sourceColor, targetColor, weight){
+  const mag = Math.max(sourceColor[0], sourceColor[1], sourceColor[2]);
+  if(mag<=0 || weight<=0) return sourceColor;
+  const blendedHue = lerp(normMax1(sourceColor), normMax1(targetColor), weight);
+  return mul(blendedHue, mag);
+}
+function scaleToFit(c){
+  const m = Math.max(c[0],c[1],c[2]);
+  return m > 1 ? c.map(v=>v/m) : c;
+}
+function addC(a,b){ return a.map((v,i)=> v + b[i]); }
+// Sky family's share of the unified light budget, driven by elevation only — the common sky
+// budget remodel. Old curve was double-peaked with a 15° 0.5 parity and ZERO sky share at the
+// horizon; shut the sharing down too early, and kept the sky abnormally dim through the entire
+// golden-hour band (measured ratio sky/sun ≈ 0.10 at 6°) until the sun/sky ratio peaked late
+// with a spurious ~0.51 "bump" at 25-30°. This is the DESIGN envelope: the sky dominates the
+// dawn/dusk band (peak 0.80 at ~7°), with its sun/sky crossing anchored at 13° where
+// skyShare(13°)=0.768 equals sunDirectShare(13°)=0.76 times elevationSunBoost at 200m (×1.01).
+// Physically the realized share CANNOT reach that peak: at 6-15° the sun's own draw is MID
+// (0.76), so the budget leaves only ~0.24 for the sky (observable-crossing sits at ~2°). The
+// cap is enforced at the call site (skyBudgetCeiling in render()); this function is the
+// pre-shift, PRE-CAP design envelope — keep the anchors as the intended shape, the budget makes
+// the final call. Below the horizon, the small KEYFRAME shelf (0.14 at -6°) keeps twilight glow
+// alive where the direct sun is gone, decaying to exactly 0 by -18° (astronomical twilight) to
+// match subHorizonFactor. Keyframed with explicit anchors, same pattern as
+// SUBHORIZON_KEYFRAMES/DAY_CYCLE. Because `elevation` is already the triangular fold of sunPos,
+// the [0.80 peak -> 13° crossing -> 0.16 noon floor] shape applies symmetrically to morning
+// and afternoon.
+const SKY_SHARE_KEYFRAMES = [
+  {e:-60, v:1.000},
+  {e:-12, v:1.000},
+  {e:-6,  v:0.780},
+  {e:0,   v:0.620},
+  {e:7,   v:0.800},
+  {e:13,  v:0.768},   // design parity anchor: ≈ sunDirectShare(13°)=0.76 × elevationSunBoost(200m)=1.01 — unreachable above the budget cap, kept as the intended envelope shape
+  {e:20,  v:0.550},
+  {e:30,  v:0.420},
+  {e:45,  v:0.280},
+  {e:60,  v:0.220},
+  {e:90,  v:0.160},
+];
+function skyShareAtElevation(elevDeg){
+  if(elevDeg <= -60) return 0;
+  if(elevDeg >= 90) return SKY_SHARE_KEYFRAMES[SKY_SHARE_KEYFRAMES.length-1].v;
+  for(let i=0;i<SKY_SHARE_KEYFRAMES.length-1;i++){
+    const a = SKY_SHARE_KEYFRAMES[i], b = SKY_SHARE_KEYFRAMES[i+1];
+    if(elevDeg>=a.e && elevDeg<=b.e){
+      const t = (elevDeg-a.e)/(b.e-a.e);
+      return a.v + (b.v-a.v)*t;
+    }
+  }
+  return SKY_SHARE_KEYFRAMES[SKY_SHARE_KEYFRAMES.length-1].v;
+}
+// Sun family's OWN share of the unified light budget — genuinely monotonic, not derived
+// from the old baseShareAtElevation/skyShare. It previously computed as `1-skyShare`, which
+// silently inherited skyShare's 15°-parity bump — a dip to 0.5 at 15° elevation, then back
+// up toward ~1.0 approaching the horizon, producing sunColor that rose as elevation
+// dropped toward 0° instead of falling.
+// Two-piece, same 15° PARITY_ELEV split as the former sky curve: the >15° branch keeps the
+// historical monotonic MID->MAX (0.76->0.85) rise (originally `1 - [SUN_FLOOR + (0.5-SUN_FLOOR)*
+// ...]`, algebraically simplified below) — that half was never buggy, and reusing it verbatim
+// keeps mid/high-elevation presets (Morning, Noon) at their original brightness.
+// The <=15° branch is a plateau-then-drop, not a single smooth ease: real golden-hour light
+// stays strong through most of the low-sun band and only collapses in the last few degrees
+// as the sun actually sets — a smooth ease from MID at 15° all the way down to FLOOR at 0°
+// was dimming Golden-hour-band elevations (~6°) that should still read bright, well before
+// the sun is anywhere near the horizon. DENT_ELEV marks where the sharp fall begins; above
+// it the curve barely leaves MID, below it it eases down to FLOOR — same half-cosine shape
+// as before, just concentrated into a narrower band instead of spread across all 15°.
+// FLOOR holds flat for elevDeg<=0 too (not decaying further here) — sub-horizon
+// existence/decay stays subHorizonFactor's job alone (twilight-band fade to 0 by -18°);
+// this curve only owns the ABOVE-horizon budget split.
+const DENT_ELEV = 4;
+function sunDirectShare(elevDeg){
+  const FLOOR = 0.35, MID = 0.76, MAX_DIRECT = 0.85, PARITY_ELEV = 15;
+  if(elevDeg <= -12) return 0;
+  if(elevDeg <= 0){
+    const t = (elevDeg + 12) / 12;
+    return FLOOR * t;
+  }
+  if(elevDeg <= DENT_ELEV){
+    const t = elevDeg/DENT_ELEV;
+    return FLOOR + (MID-FLOOR)*0.5*(1-Math.cos(Math.PI*t));
+  }
+  if(elevDeg <= PARITY_ELEV){
+    // Flat plateau at MID — already exactly continuous with both neighbors (the DENT branch
+    // reaches MID at DENT_ELEV, the >15° branch starts at MID), so no interpolation is
+    // needed here at all.
+    return MID;
+  }
+  const t = (elevDeg-PARITY_ELEV)/(90-PARITY_ELEV);
+  return MID + (MAX_DIRECT-MID)*0.5*(1-Math.cos(Math.PI*t));
+}
+// Faked-GI terrain bounce weight for staticSkyColor (see call site). Terrain.sunColor's own
+// brightness is fading fast past the 13° sun/sky parity point (that's what
+// parity means: sky is overtaking sun in the unified budget) — a bounce term that lingered
+// toward the horizon anyway would be reflecting light that isn't there to bounce. A single
+// symmetric peak (Gaussian, narrow — PEAK_SIGMA controls how quickly it fades on both sides)
+// centered just above that parity elevation is the honest shape: negligible at high sun,
+// rising to a capped, still-blue-leaning maximum near the peak, then receding the same way
+// it rose as elevation keeps dropping — letting the sky's own blue reassert well before
+// dusk/night rather than riding a slow decay all the way to the horizon.
+function terrainBleedWeight(elevDeg){
+  const PEAK_ELEV = 20, PEAK_SIGMA = 5, MAX_W = 0.35;
+  if(elevDeg <= 0) return 0;
+  return MAX_W * Math.exp(-((elevDeg-PEAK_ELEV)**2) / (2*PEAK_SIGMA*PEAK_SIGMA));
+}
+// Maximum fake-GI bounce budget, in the same units as the sun/sky budget shares — this is
+// also the Terrain bounce slider's max value, so the thumb position directly equals the
+// bounce contribution it produces (no decoupling between slider range and actual output,
+// which the old 0.25*effIntensity hard cap caused: the thumb went to 1.0 while the GI
+// stalled at ~0.31). 0.1 at noon is a deliberate, small lift — "counteract slightly, not
+// cancel" — with 0.001 step granularity for fine adjustment.
+const GI_BOUNCE_MAX = 0.1;
+// Noon gate for the fake-GI bounce slider. The budget's own shape already makes shadows
+// darkest at solar noon (the sky's cut of the unified pool bottoms out exactly when the
+// sun's does not) — the old per-term artificial floors fought that physical dip by bolting
+// a flat minimum onto each shadow term. With the floors gone, that noon bottoming is the
+// *honest* budget result, and giBounce is the only tool that lifts it again. Wide, gradual
+// raised-cosine bell: 0 below 3° elevation (just above the horizon), gently rising through
+// the whole morning, peaking at solar noon (90°), then easing back to 0 once the sun drops
+// below 3° in the evening — a very subtle ramp across the entire day, keyframed with the
+// same day-cycle pattern as intensity/haze. Elevation is the sole brightness driver
+// (haze/overcast remove irradiance, they don't move the sun's height).
+function noonFillWeight(elevDeg){
+  const FLOOR_ELEV = 3, PEAK_ELEV = 90; // 0 below 3°, 1 at solar noon
+  if(elevDeg < FLOOR_ELEV) return 0;
+  const t = Math.min(1, Math.max(0, (elevDeg - FLOOR_ELEV) / (PEAK_ELEV - FLOOR_ELEV)));
+  return 0.5 * (1 - Math.cos(t * Math.PI));
+}
+function fmt(c,d=4){ return c.map(v=>parseFloat(v.toFixed(d)).toString()).join('/'); }
+function hexToRgb01(hex){
+  const h = hex.replace('#','');
+  return [
+    parseInt(h.substring(0,2),16)/255,
+    parseInt(h.substring(2,4),16)/255,
+    parseInt(h.substring(4,6),16)/255
+  ];
+}
+const AEROSOL_TINTS = {
+  clean: [1.0, 1.0, 1.0],      // negligible particulate — sky stays pure Rayleigh blue
+  humid: [0.90, 0.93, 0.97],   // pale gray-white — water vapor scatters broadband
+  dust:  [0.95, 0.78, 0.52],   // warm ochre — mineral dust scatters warm
+  smoke: [0.72, 0.66, 0.76],   // violet-gray — fine combustion/volcanic particulate
+};
+// Twilight-only dome tint standing in for the illuminated-aerosol-layer glow (Bishop's ring /
+// reddened-sun-lighting-still-lit-particulate effect). Simplification: applied as a flat dome
+// blend rather than localized near the sun, gated on elevation (dawn/dusk only) and on the
+// tropospheric haze slider as a proxy for aerosol loading. Strength halves maritime/clean
+// (finer, fainter sulfate/water-droplet glow) relative to dust/volcanic (coarser, more vivid ash).
+const TWILIGHT_AEROSOL_TINT = {
+  clean: [0.75, 0.50, 1.00],   // violet
+  humid: [0.75, 0.50, 1.00],   // violet (maritime)
+  dust:  [1.00, 0.52, 0.35],   // saffron red
+  smoke: [1.00, 0.40, 0.82],   // magenta (volcanic)
+};
+const TWILIGHT_AEROSOL_STRENGTH = { clean: 0.5, humid: 0.5, dust: 1.0, smoke: 1.0 };
+// Moonlight regime (automatic below -15° sun elevation — see render()):
+// a conceptually separate, Purkinje-shifted light source that replaces the dead sun's output
+// with one cool hue applied to BOTH the sun and sky families. MOON_COLOR is that base hue
+// (pale moonlit blue-white); MOON_BASE_KELVIN is the blackbody temperature that renders ≈
+// MOON_COLOR, so the elevation-driven Purkinje shift can be applied as a kelvin offset on top.
+// MOON_AEROSOL_TINTS is a dedicated, more neutral aerosol set for the regime (the day tints
+// would over-warm a scene with no sun to "see" the aerosol through); MOON_STRATO_TINT is the
+// high-altitude-turbidity shift per air type under moonlight (volcanic/smoke = blood-moon red,
+// clean+maritime = slight blue, dust = warmness — replacing the day twilight tint that is
+// gated to the sun's own glow band).
+const MOON_COLOR = [0.82, 0.88, 1.00];
+const MOON_BASE_KELVIN = 8600; // kelvinToRGB(8600) ≈ MOON_COLOR — anchor for the Purkinje offset
+// Night-sky illumination (stars, light pollution) for the moon-less band between -15° and
+// ≈ -25°: the sky family's own bell-curved source, peaking at ≈ -20°. Its share is then
+// "stolen" by the rising moonlight (see render() regime block) — the two curves overlap and
+// hand the sky budget off rather than doubling it.
+const NIGHT_SKY_COLOR = [0.22, 0.24, 0.30];
+const MOON_AEROSOL_TINTS = {
+  clean: [1.00, 1.00, 1.00],
+  humid: [0.96, 0.98, 1.00],
+  dust:  [0.98, 0.90, 0.76],
+  smoke: [0.88, 0.86, 0.87],
+};
+const MOON_STRATO_TINT = {
+  clean: [0.97, 0.98, 1.04],   // slight blue shift
+  humid: [0.97, 0.98, 1.04],   // slight blue shift (maritime)
+  dust:  [1.05, 0.95, 0.85],   // warmness shift
+  smoke: [1.10, 0.35, 0.30],   // blood moon red (volcanic)
+};
+// Elevation-only gate — no haze coupling here, so haze's own contribution (via the haze/10
+// factor at the call site) isn't double-counted. Full strength at/below horizon, fading out
+// by 20° elevation on either side of noon.
+function twilightAerosolGate(elevDeg){
+  if(elevDeg<=0) return 1;
+  if(elevDeg>=20) return 0;
+  return 1 - elevDeg/20;
+}
+function fmt255(c){ return c.map(v=>Math.round(clamp01(v)[0]!==undefined?v:v)).join('/'); }
+
+// ---------- element refs ----------
+const el = id=>document.getElementById(id);
+const inputs = ['intensity','haze','fogb','staticI','terrainB','altitude','overcast','stratoAerosol','giBounce'];
+// Populated by render() with the actual final Lightmanager.sunColor each time it runs — the
+// single source of truth for anything that needs "how bright/attenuated is the sun right
+// now," rather than a hand-maintained approximation that can drift out of sync whenever the
+// real pipeline changes (haze, overcast, altitude, terrainB, aerosol, etc. all feed into it).
+let lastSunColor = [1,1,1];
+// Pre-bounce twin of lastSunColor — identical when giBounce=0, otherwise the sun magnitude
+// the scene would have WITHOUT the bounce carving into it. The ground-blend auto-track reads
+// this reference so the bounce slider only ever re-brightens the shadow family and can never
+// move the foliage/terrain ground-tint hue gate.
+let lastSunPreBounce = [1,1,1];
+// Budget probe for the parity harness — captures the unified-budget internals each render so
+// the harness can assert sun+sky==totalBudget holds exactly even when the terrain-bounce slider
+// diverts a slice of the sun's cut into the shadow family. Same "populated by render() each run"
+// pattern as lastSunColor.
+var lastBudget = null;
+// Whether the foliage ground-blend slider auto-tracks the real sun brightness (default) or
+// has been manually pinned by the user via the slider itself. Manual pin persists until any
+// OTHER relevant input changes (haze, overcast, sunPos, altitude, aerosol, time of
+// day, presets) — same "overridable until the next thing touches it" pattern as haze/sunPos.
+let groundBlendAuto = true;
+// Shadow-compensator slider sync: the slider's thumb must show the overcast-damped EFFECTIVE
+// value, but the render still needs the user's/keyframe's RAW setting to scale from. Keep raw
+// and last-written-effective separately: if the element no longer equals what we last wrote,
+// the change came from the user drag or a keyframe, so adopt it as the new raw; otherwise the
+// value we see is our own write-back and the raw is retained (no compounding across renders).
+let giBounceRaw = GI_BOUNCE_MAX;
+let giBounceWrote = null;
+const moonlightBox = el('moonlight');
+
+// Cloud cover is intentionally not part of any preset — it's an independent
+// manual control, decoupled from both time of day and presets.
+const PRESETS = [
+  {name:'Dawn',        hour:6},
+  {name:'Morning',     hour:8},
+  {name:'Noon clear',  hour:12},
+  {name:'Golden hour', hour:17.6},
+  {name:'Dusk',        hour:18.2},
+  {name:'Night', night:true, hour:0},
+];
+const presetWrap = el('presets');
+PRESETS.forEach(p=>{
+  const b = document.createElement('button');
+  b.className = 'preset-btn'+(p.night?' night':'');
+  b.textContent = p.name;
+  b.onclick = ()=>{
+    applyTimeOfDay(p.hour);
+    renderWithGroundSync();
+  };
+  presetWrap.appendChild(b);
+});
+
+// ---------- 24h day-cycle model ----------
+// Drives sun position, intensity and haze from a single time-of-day value.
+// Cloud cover is deliberately excluded — it stays an independent variable,
+// since real cloud cover doesn't correlate with clock time.
+const DAY_CYCLE = [
+  {h:0,    intensity:0.18, haze:2.0},
+  {h:1.5,  intensity:0.16, haze:1.6},
+  {h:3,    intensity:0.17, haze:1.8},
+  {h:4.7,  intensity:0.26, haze:2.4},
+  {h:5,    intensity:0.35, haze:3.0},
+  {h:6,    intensity:0.85, haze:6.0},
+  {h:8,    intensity:1.1,  haze:4.0},
+  {h:12,   intensity:1.45, haze:2.2},
+  {h:16,   intensity:1.1,  haze:3.5},
+  {h:17.6, intensity:0.9,  haze:5.0},
+  {h:18.2, intensity:0.5,  haze:7.0}, // elevation ~-3° here — inside the twilight-glow band
+  {h:19,   intensity:0.22, haze:4.0}, // glow fading fast as elevation drops past the cutoff
+  {h:20,   intensity:0.19, haze:2.6},
+  {h:21.5, intensity:0.17, haze:1.9},
+  {h:23,   intensity:0.18, haze:2.0},
+];
+// No season/latitude input exists, so "hour" can't reflect real sunrise/sunset drift —
+// it assumes a fixed 12h equinox day (sunrise 6:00, sunset 18:00), stated explicitly in
+// the UI label rather than left as an implicit, unstated assumption.
+// Night extension: the old model was (h-6)*15 clamped to [-18, 198], which produced two
+// DEAD ZONES — 00:00-04:42 and 19:12-24:00 both sat pinned at -18°, so ~9.5 hours of the
+// time slider did nothing. Replaced with explicit keyframes dipping to -60° at 0:00. The
+// day anchors (6/12/18) are byte-identical to the old line (matched at h=6, 12, 18 and a
+// midpoint check at 17.6), so nothing above the horizon changes. The night is now live,
+// letting the slider dial smoothly, and 0:00/-60° becomes the anchor for the upcoming
+// moon-influence curve (21:00 rise, 0:00 max, 4:00 set).
+// SUNPOS_KEYFRAMES is generated from SUNPOS_ANCHORS by subdividing every segment at each
+// WHOLE degree of sun elevation, so every angle -60..240 is an explicit keyframe (0, 1, 2, 3,
+// ...). Before the densification, scrubbing the slider in 1° sun-steps would land on whatever
+// the coarse interpolation produced and could skip whole degrees (e.g. jumping 0°→2°). Now
+// each degree carries its own keyframe, so the slider passes through every angle with no
+// skips, and D is byte-identical because linear interp between per-degree stops still sits
+// exactly on the old segment lines.
+const SUNPOS_ANCHORS = [
+  {h:0,   v:-60},   // 00:00 — -60°, moon-max anchor
+  {h:4.7, v:-18},   // 04:42 — -18° (unchanged)
+  {h:6,   v:0},     // 6:00 — horizon
+  {h:12,  v:90},    // 12:00 — solar noon
+  {h:18,  v:180},   // 18:00 — horizon
+  {h:19.2,v:198},   // 19:12 — -18° (unchanged)
+  {h:24,  v:240},   // 24:00 — wraps to 0:00 (= -60°)
+];
+function densifyKeyframes(anchors){
+  const out = [];
+  for(let i=0;i<anchors.length-1;i++){
+    const a = anchors[i], b = anchors[i+1];
+    const dh = b.h-a.h, dv = b.v-a.v;
+    out.push({h:a.h, v:a.v});
+    const steps = Math.abs(dv);
+    for(let s=1;s<steps;s++){
+      out.push({h:a.h + dh*(s/steps), v:a.v + Math.sign(dv)*s});
+    }
+  }
+  out.push({h:anchors[anchors.length-1].h, v:anchors[anchors.length-1].v});
+  return out;
+}
+const SUNPOS_KEYFRAMES = densifyKeyframes(SUNPOS_ANCHORS);
+function hourToSunPos(h){
+  const hh = ((h%24)+24)%24;
+  const kf = SUNPOS_KEYFRAMES;
+  if(hh <= kf[0].h) return kf[0].v;
+  if(hh >= kf[kf.length-1].h) return kf[kf.length-1].v;
+  for(let i=0;i<kf.length-1;i++){
+    const a=kf[i], b=kf[i+1];
+    if(hh>=a.h && hh<=b.h){
+      const t = (b.h===a.h) ? 0 : (hh-a.h)/(b.h-a.h);
+      return a.v + (b.v-a.v)*t;
+    }
+  }
+  return kf[kf.length-1].v;
+}
+// Aerosol type biases the day-cycle's typical haze amount (not its tint — that's handled
+// separately by AEROSOL_TINTS). Clean/alpine air trends toward a quarter of the default
+// turbidity; other types are unchanged for now.
+const AEROSOL_HAZE_MULT = { clean: 0.25, humid: 1, dust: 1, smoke: 1 };
+function computeDayCycle(hour, aerosolKey){
+  const h = ((hour%24)+24)%24;
+  const kf = DAY_CYCLE.concat([{h:24, intensity:DAY_CYCLE[0].intensity, haze:DAY_CYCLE[0].haze}]);
+  let a=kf[0], b=kf[kf.length-1];
+  for(let i=0;i<kf.length-1;i++){
+    if(h>=kf[i].h && h<=kf[i+1].h){ a=kf[i]; b=kf[i+1]; break; }
+  }
+  const t = (b.h===a.h) ? 0 : (h-a.h)/(b.h-a.h);
+  const hazeMult = AEROSOL_HAZE_MULT[aerosolKey] ?? 1;
+  const sp = hourToSunPos(h);
+  return {
+    sunPos: sp,
+    intensity: a.intensity + (b.intensity-a.intensity)*t,
+    haze: (a.haze + (b.haze-a.haze)*t) * hazeMult,
+    // Faked-GI bounce is keyframed to the noon bell (0 below 3° elevation, reaching
+    // GI_BOUNCE_MAX at solar noon, easing back to 0 below 3° on the way down) — same
+    // day-cycle pattern as intensity/haze, so the noon dip fills automatically as time
+    // moves and the slider value tracks the curve in the same units as the budget. It
+    // stays hand-overridable afterward like intensity/haze (manual value holds until the
+    // time slider or a preset touches it again).
+    bounce: noonFillWeight(90 - Math.abs(90 - sp)) * GI_BOUNCE_MAX,
+  };
+}
+// Sets sun position, intensity, haze and keyframed faked-GI bounce from the time-of-day
+// slider, and marks the foliage ground-blend as auto-tracking again (see
+// renderWithGroundSync). All of them stay directly manipulatable afterward — moving them
+// by hand simply overrides the day-cycle value until the slider (or a preset) is touched
+// again.
+function applyTimeOfDay(hour){
+  el('timeOfDay').value = hour;
+  const c = computeDayCycle(hour, el('aerosol').value);
+  el('sunPos').value = c.sunPos.toFixed(0);
+  el('intensity').value = c.intensity.toFixed(2);
+  el('haze').value = c.haze.toFixed(1);
+  el('giBounce').value = c.bounce.toFixed(3);
+  giBounceWrote = null; // force the next render to adopt the keyframe as the new raw regardless of value coincidence
+  groundBlendAuto = true;
+}
+// Pure value-conversion helper, independent of the render pipeline: takes the raw Y
+// component pasted from the level's Lightmanager.sunDirection vector and converts it to
+// an elevation in degrees via abs(asin(Y)). sunDirection is a unit vector, so Y alone
+// (regardless of sign convention) already maps 1:1 to elevation magnitude — this does not
+// disambiguate dawn vs dusk side, it's a read-only reference conversion, not wired into
+// sunPos/render.
+function updateSunDirConversion(){
+  const raw = el('sunDirY').value.trim();
+  const y = parseFloat(raw);
+  const out = el('v-sunDirDeg');
+  if(raw === '' || isNaN(y) || y < -1 || y > 1){
+    out.textContent = '';
+    return;
+  }
+  const deg = Math.abs(Math.asin(y) * 180/Math.PI);
+  out.textContent = deg.toFixed(1)+'°';
+}
+el('sunDirY').addEventListener('input', updateSunDirConversion);
+
+function formatHour(h){
+  h = ((h%24)+24)%24;
+  const hh = Math.floor(h);
+  const mm = Math.round((h-hh)*60);
+  return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+}
+
+function elevationToKelvinSun(elevDeg, haze, altitude, solarPhase){
+  let e = elevDeg;
+  let k;
+  if(e<=-4) k=1500;
+  else if(e<=0) k = lerp1(1500,1900,(e+4)/4);
+  else if(e<=5) k = lerp1(1900,2500,e/5);
+  else if(e<=15) k = lerp1(2500,3500,(e-5)/10);
+  else if(e<=40) k = lerp1(3500,5000,(e-15)/25);
+  else k = lerp1(5000,5800,Math.min(1,(e-40)/50));
+  // haze pulls warm sun even warmer near horizon; thinner air at altitude weakens this
+  const altitudeFactor = Math.min(1, altitude/4000);
+  // Elevation gate now shares opticalDepth's airmass model instead of its own ad-hoc linear
+  // ramp — same "how much atmosphere does light pass through" logic already used for
+  // desaturation/dawn-swap elsewhere in the file. Altitude is zeroed here (opticalDepth's own
+  // altitude term would otherwise double-count against the outer (1-0.6*altitudeFactor) below,
+  // which remains the sole altitude modifier). Floored at 0.35 so haze still nudges noon sun
+  // color rather than gating to zero above ~30deg elevation.
+  // Standalone gate (see hazeWarmthGate) — deliberately decoupled from opticalDepth so
+  // retuning the shared OD curve (skyDarkCurve/dawn-swap/dusk-desat) never cross-contaminates
+  // haze's Kelvin-warmth pull, or vice versa.
+  const hazeElevFactor = hazeWarmthGate(e);
+  // Local-only haze value for warmth: dusk (+) gets up to +25% pull, dawn (-) up to -25%,
+  // fading to no bias by 25deg elevation. Confined to hazePull — the shared `haze` param
+  // itself is untouched, so opticalDepth/sky/fog callers elsewhere see the real slider value.
+  const phaseBias = (solarPhase||0) * warmthPhaseGate(e);
+  const effHazeForWarmth = haze * (1 + phaseBias*0.25);
+  const hazePull = effHazeForWarmth/10 * hazeElevFactor * 600 * (1 - 0.6*altitudeFactor);
+  // Floor dropped from 1500K to 1200K: 1500K sat right at the deep-dusk/night base color
+  // (k_base=1500 for e<=-4), so hazePull was fully clamped away below the horizon — haze had
+  // zero visible effect exactly where it should matter most. 1200K restores headroom there.
+  return Math.max(1200, k - hazePull);
+}
+function lerp1(a,b,t){ return a+(b-a)*Math.min(1,Math.max(0,t)); }
+function smoothstep01(t){ t = Math.min(1,Math.max(0,t)); return t*t*(3-2*t); }
+// Dedicated, standalone gate for haze's warming pull on sun Kelvin — deliberately NOT
+// derived from opticalDepth(). The two curves serve different jobs (this: "how much should
+// haze specifically warm the sun"; opticalDepth: "how much has the atmosphere structurally
+// changed the light," feeding skyDarkCurve/dawn-swap/dusk-desat/ground desat) and were
+// previously unified, which meant any retune of one silently dragged the other's magnitude
+// along. Kept independent so each can be tuned on its own terms going forward. Same simple
+// linear-elevation shape as the original pre-unification version; altitude is handled
+// separately by hazePull's own outer (1-0.6*altitudeFactor) term, not here.
+function hazeWarmthGate(elevDeg){
+  return Math.min(1, Math.max(0.35, 1 - elevDeg/30));
+}
+// Twilight-band fade for the dawn/dusk swap and desaturation weights only (dawnSwapWeight,
+// duskDesatW, dawnDesatW) — NOT opticalDepth itself, and not used above 0° elevation
+// (returns 1 there, so those branches are unaffected). Keyframed rather than linear: real
+// atmospheric extinction front-loads almost all of the drop into the first ~6° below the
+// horizon (civil twilight) — a straight 1->0 ramp to -18° was still near half-strength at
+// -6°, badly understating how fast the sun's influence actually falls off. Same
+// explicit-anchor-point pattern as elevationToKelvinSun/DAY_CYCLE elsewhere in this file.
+// Note: the curve itself starts at 0.90, not 1.0, right at the horizon (e=0) — atmospheric
+// extinction is already cutting into the sun's effective strength at the geometric horizon,
+// before it dips negative, so there's a deliberate small step down from the >=0° branch's
+// flat 1 to this curve's 0.90 at e=0 rather than a perfectly continuous join.
+const SUBHORIZON_KEYFRAMES = [
+  {e:0,   v:0.90},
+  {e:-3,  v:0.50},
+  {e:-6,  v:0.20},
+  {e:-12, v:0.04},
+  {e:-18, v:0.00},
+];
+function subHorizonFactor(elevDeg){
+  if(elevDeg > 0) return 1;
+  if(elevDeg <= -18) return 0;
+  for(let i=0;i<SUBHORIZON_KEYFRAMES.length-1;i++){
+    const a = SUBHORIZON_KEYFRAMES[i], b = SUBHORIZON_KEYFRAMES[i+1];
+    if(elevDeg<=a.e && elevDeg>=b.e){
+      const t = (elevDeg-a.e)/(b.e-a.e);
+      return a.v + (b.v-a.v)*t;
+    }
+  }
+  return 0;
+}
+// Artificial sky brightness attenuation for the twilight zone below -12°: the sun's indirect
+// illumination is dying, so the sky dome must fade to black even though the budget HEADROOM
+// (sky share) stays at 1.0 (reserved for future moonlight). Linear ramp from 1.0 at -12° to
+// 0.0 at -18°, flat 0 from -18° to -60°. Applied only to OUTPUT brightness, not the budget
+// split itself — ambientBase/effIntensity identity is preserved.
+function skyAttenuation(elevDeg){
+  if(elevDeg >= -12) return 1;
+  if(elevDeg <= -18) return 0;
+  return (elevDeg + 18) / 6;
+}
+// Elevation-only "is the sun present" gate for sun terms that don't draw on effSunFunded
+// (e.g. effectSunColor, which reads dayFactor). 1 above 0°, ramping to exactly 0 by -12°,
+// matching sunDirectShare's below-horizon branch. Flat 0 below -12°.
+function sunExistenceGate(elevDeg){
+  if(elevDeg >= 0) return 1;
+  if(elevDeg <= -12) return 0;
+  return (elevDeg + 12) / 12;
+}
+// Dawn/dusk aerosol-composition + thermal-turbulence bias, folded into a single coefficient
+// on the *local* haze value used only inside elevationToKelvinSun (never the shared haze
+// slider, opticalDepth, sky color or fog). solarPhase's sign picks the side (negative dawn =
+// less warming bias, positive dusk = more, standing in for coarser/dirtier lofted particulate
+// and more turbulent mixing by end of day); a tight elevation gate (zero by 25°, distinct from
+// hazeWarmthGate's 0.35 floor) keeps the asymmetry confined to near-horizon sun, not smeared
+// across the whole morning/afternoon.
+function warmthPhaseGate(elevDeg){
+  if(elevDeg<=0) return 1;
+  if(elevDeg>=25) return 0;
+  return 1 - elevDeg/25;
+}
+// Real atmospheric optics: airmass (path length through atmosphere) is ~flat until roughly
+// 20-30° elevation, then rises sharply near the horizon — not a linear ramp. This single
+// function replaces five separately hand-tuned linear curves (day/night dimming, dawn color
+// swap, dawn/dusk desaturation) with one physical driver, so altitude (thinner air = shorter
+// path) and aerosol/haze (more particulate = effectively longer scattering path) naturally
+// modulate all of them at once instead of needing separate special-casing for each.
+function opticalDepth(elevationDeg, altitudeFactor, effHazeVal){
+  if(elevationDeg<=0) return 1;
+  const AM = 1/Math.sin(elevationDeg*Math.PI/180);
+  const altAdj = AM * (1 - 0.4*altitudeFactor);
+  const hazeAdj = altAdj * (1 + (effHazeVal/10)*0.5);
+  const AM_CAP = 20;
+  const AMc = Math.min(hazeAdj, AM_CAP);
+  // Log-normalized rather than linear: airmass itself grows roughly exponentially near the
+  // horizon, so a linear 1->20 to 0->1 map saturates OD to 1 by ~3deg elevation and flattens
+  // 15-30deg into near-zero — squeezing nearly all real differentiation outside the elevation
+  // band this tool is actually used in. Log-compressing AM back down redistributes resolution
+  // into the low-elevation band without changing the 0/1 endpoints or the horizon/AM_CAP logic.
+  return Math.max(0, Math.min(1, Math.log(AMc)/Math.log(AM_CAP)));
+}
+
+function hazeToKelvinSky(haze, elevDeg, altitude){
+  const altitudeFactor = Math.min(1, altitude/4000);
+  // Sky hue is now driven purely by haze/turbidity and altitude — not elevation. Horizon
+  // warmth is a distinct, localized phenomenon (ozone Chappuis absorption + long path length)
+  // already handled by the dedicated twilight-glow system further down; blending toward a
+  // warm sun-temperature here duplicated that effect across the *entire* dome and prevented
+  // a genuinely deep, saturated blue from ever surviving into dusk/dawn/night.
+  return lerp1(21000, 7000, haze/10) + altitudeFactor*6000; // thinner air = deeper blue
+}
+
+function render(){
+  const sunPos = +el('sunPos').value;
+  const elevation = 90 - Math.abs(90 - sunPos); // triangular: 0/180 = horizon, 90 = solar noon
+  const solarPhase = Math.max(-1, Math.min(1, (sunPos-90)/95)); // negative = morning/dawn side, positive = afternoon/dusk side
+  const intensity = +el('intensity').value;
+  const haze = +el('haze').value;
+  const stratoAerosol = +el('stratoAerosol').value;
+  const fogb = +el('fogb').value;
+  const staticI = +el('staticI').value;
+  const terrainB = +el('terrainB').value;
+  const shadowD = 0.39; // effect shadow darkness — pinned to its standard value, control removed
+  const ambientL = 1.0; // ambient override control removed — folded into unified light budget, no longer independently adjustable
+  const groundBlend = +el('groundBlend').value;
+  const overcast = +el('overcast').value;
+  // Adopt the slider's value as raw only if it isn't our own last write-back (see giBounceRaw
+  // note above) — this is what lets the thumb be moved to the damped value without the next
+  // render re-damping an already-damped number.
+  if(giBounceWrote === null || Math.abs(+el('giBounce').value - giBounceWrote) > 1e-9) giBounceRaw = +el('giBounce').value;
+  const giBounce = giBounceRaw * Math.max(0, 1 - overcast/0.1); // Shadow compensator (auto) progressively withdraws as cloud cover thickens — by 10% overcast the diffuse dome already fills the shadows the compensator fakes, so the raw keyframed noon-bell value (or a manual override, which this scaling applies to equally) ramps linearly to zero across 0→10% cover and stays off beyond it.
+  giBounceWrote = +giBounce.toFixed(3); // store the STEP-SNAPPED value we actually write — the range input rounds to step=0.001, so comparing the element against a full-precision number falsely reads our own write-back as a user change and lets the raw decay toward the damped value
+  el('giBounce').value = giBounce.toFixed(3); // thumb reflects the effective contribution so it visibly withdraws as cover rises
+  const altitude = +el('altitude').value;
+  const aerosolKey = el('aerosol').value;
+  const aerosol = AEROSOL_TINTS[aerosolKey];
+  const groundAlbedo = normMax1(hexToRgb01(el('groundAlbedo').value));
+  const moon = elevation <= -26; // automatic: moonlight is present whenever the sun is below -26° (the checkbox is a passive note, not a control)
+  moonlightBox.checked = moon; // keep the disabled note box reflecting the auto state
+
+  el('v-altitude').textContent = altitude+'m';
+  el('v-time').textContent = formatHour(+el('timeOfDay').value);
+  el('v-timeElev').textContent = (moon ? 'sun '+Math.round(elevation)+'°' : 'sun elevation '+Math.round(elevation)+'°')+' · moon '+(moon?'active':'off');
+
+  const phaseLabel = solarPhase < -0.03 ? ' dawn' : solarPhase > 0.03 ? ' dusk' : ' noon';
+  el('v-elevation').textContent = Math.round(elevation)+'°'+phaseLabel;
+  el('v-intensity').textContent = intensity.toFixed(2)+'x';
+  el('v-haze').textContent = haze.toFixed(1);
+  el('v-stratoAerosol').textContent = stratoAerosol.toFixed(2);
+  el('v-fogb').textContent = fogb.toFixed(2);
+  el('v-staticI').textContent = staticI.toFixed(2);
+  el('v-terrainB').textContent = terrainB.toFixed(2)+'x';
+  el('v-groundBlend').textContent = groundBlend.toFixed(2);
+  el('v-giBounce').textContent = giBounce.toFixed(3); // shows the overcast-damped effective value — the compensator's real contribution — so users see it withdraw to 0.000 as cover crosses 10%
+  el('v-overcast').textContent = Math.round(overcast*100)+'%';
+
+  // Atmospheric color (sky hue, aerosol mixing, optical depth) is a function of haze and
+  // altitude only — never of solar phase directly. Solar phase already has two legitimate,
+  // physically-scoped channels into the render: elevation-driven airmass (steepens near the
+  // horizon regardless of dawn/dusk side) and the dedicated twilight-glow term below. Piping
+  // it into a third, hidden "effective haze" bumped the atmosphere's own turbidity based on
+  // time of day rather than the haze slider — so a genuinely clean/low-haze sky could never
+// read clean at dusk. Removed; haze here means haze, full stop.
+  let kSun = elevationToKelvinSun(elevation, haze, altitude, solarPhase);
+  let kSky = hazeToKelvinSky(haze, elevation, altitude);
+  const W = normMax1(kelvinToRGB(kSun));      // sun hue
+  const altitudeFactor = Math.min(1, altitude/4000);
+  const aerosolBlend = Math.max(0, Math.min(1, (haze/10) * (1 - 0.5*altitudeFactor)));
+  let skyRaw = kelvinToRGB(kSky);
+  // Blackbody emission and Rayleigh scattering have very different wavelength dependence —
+  // blackbody asymptotes toward white-blue and never reproduces how deeply saturated a real
+  // clear sky gets. Boost blue / cut red-green as an explicit correction, strongest when the
+  // effective sky temperature is high (clear, cold-blue) and aerosol isn't already washing it out.
+  if(kSky > 9000){
+    const clarity = Math.min(1, (kSky-9000)/16000) * Math.max(0, 1-aerosolBlend);
+    skyRaw = [skyRaw[0]*(1-0.22*clarity), skyRaw[1]*(1-0.08*clarity), Math.min(1,skyRaw[2]*(1+0.12*clarity))];
+  }
+  // Twilight illuminated-aerosol-layer glow — blended into the raw sky color before the
+  // existing haze/aerosol broadband tint (below) runs on top. Gated on elevation (dawn/dusk
+  // only, via twilightAerosolGate) and on the dedicated stratospheric aerosol slider (loading,
+  // 0-1) rather than the tropospheric haze slider — this is a distinct high-altitude layer,
+  // physically decoupled from ground-level turbidity. Capped so dust/volcanic can't fully
+  // overwrite the dome even at max loading.
+  const twilightGate = twilightAerosolGate(elevation);
+  const twilightStrength = TWILIGHT_AEROSOL_STRENGTH[aerosolKey] ?? 0;
+  const twilightWeight = Math.min(0.6, twilightGate * stratoAerosol) * twilightStrength;
+  skyRaw = lerp(skyRaw, TWILIGHT_AEROSOL_TINT[aerosolKey], twilightWeight);
+  let C = normMax1(lerp(skyRaw, aerosol, aerosolBlend)); // sky hue, tinted by aerosol
+  // Cloud droplets are large enough to scatter all wavelengths near-equally (why clouds
+  // look white/gray, not blue) — thick cover washes the sky hue toward neutral regardless
+  // of aerosol type, independent of the haze/turbidity effect above.
+  const cloudGray = [0.90, 0.92, 0.95];
+  C = normMax1(lerp(C, cloudGray, overcast*0.85));
+  // Twilight afterglow was previously blended directly into C (the sky-dome color) —
+  // but its weight and hue came from elevation/solarPhase, not haze/altitude. That's a
+  // second, structural violation of the same rule the dawnDuskHazeBias removal addressed:
+  // solar phase must not touch sky color. A real horizon afterglow is also inherently
+  // localized near the sun, not a flat tint over the whole dome — applying it uniformly
+  // to a single flat skycolor export was never physically honest to begin with. Removed;
+  // C now stays purely a function of haze, altitude, and cloud cover.
+  const sunHue = normMax1(lerp(W, C, overcast*0.7));
+
+// Cloud cover attenuates the direct beam (irradiance is redirected into diffuse, not destroyed).
+  const sunIntensity = intensity;
+  const hazeFrac = haze/10;
+
+  // OD (airmass-driven optical depth) still drives the elevation-only night-dark curve and
+  // ground/hue desaturation below — it no longer drives the budget split itself.
+  const OD = opticalDepth(elevation, altitudeFactor, haze);
+
+  // --- Unified light budget --- (applies to every term below, including terrain.GIColor)
+  // One shared pool that atmospheric factors only *redistribute*, never add to independently.
+  // Overcast is the only thing allowed to shrink the pool itself (thick cloud genuinely blocks
+  // some total irradiance, per spec); haze only shifts the split, never the pool size.
+  // 1.25 light budget binds only below the horizon — Step 0 applied it globally, which
+// dimmed daytime (noon default intensity 1.45 got capped). Above 0° the budget must stay
+// exactly as it was (sunIntensity * overcast shrink, uncapped) per the no-above-0° rule;
+// below the horizon the economy cap applies and reserves the headroom the moon draws on.
+const totalBudget = elevation <= 0
+  ? Math.min(1.25, sunIntensity * lerp1(1, 0.85, overcast))
+  : sunIntensity * lerp1(1, 0.85, overcast);
+
+  // Sky family draws on the common-sky-budget envelope (see SKY_SHARE_KEYFRAMES) as its design
+  // intent, but the REALIZED share is hard-capped by the physical budget: the sun draws
+  // sunDirectShare*cloudDirectAtten*subHorizonFactor of totalBudget, and solar irradiance is
+  // conserved — what the sun keeps, the sky cannot also keep. The cap is EXACT regardless of
+  // cloud cover because the cloud-redirect term (1-skyShare)*(1-cloudDirectAtten) cancels out
+  // of the sum (ambient + effIntensity == totalBudget at the cap, checked overcast∈[0,1]).
+  // Consequence at the golden-hour band: the envelope's peak (0.80 at ~7°) would let shadows
+  // outshine the low sun (measured ratio ~1.09 beyond the cap) — physically wrong, since at
+  // 6-8° sunDirectShare sits at its 0.76 MID plateau, leaving at most 0.24 of the budget for
+  // the sky's cut. The cap chokes the envelope wherever it exceeds the ceiling: skyShare =
+  // min(0.92, envelope + shift, 1 - sunDirectShare*subHorizonFactor). The nominal 13° parity
+  // "anchor" stays in the envelope as the design crossing, unreachable above the cap.
+  const budgetShiftToSky = lerp1(0, 0.12, hazeFrac) + lerp1(0, 0.35, overcast);
+  const skyBudgetCeiling = 1 - sunDirectShare(elevation)*subHorizonFactor(elevation);
+  const skyShare = Math.min(skyBudgetCeiling, skyShareAtElevation(elevation) + budgetShiftToSky);
+  // Cloud redirects the direct beam to diffuse rather than destroying it outright (the
+  // pool itself already shrank once, via totalBudget's own overcast term above). So the
+  // fraction cloudDirectAtten strips from the sun's cut is added to the sky's cut here,
+  // not dropped — sun+sky are made to sum to exactly totalBudget.
+  const cloudDirectAtten = 1 - overcast*0.85;
+  const ambientBase = totalBudget * (skyShare + (1-skyShare)*(1-cloudDirectAtten));
+  const ambientMag = ambientBase * ambientL; // ambientL pinned to 1.0 — override control removed, budget alone drives ambient magnitude
+
+  // Sun family deliberately does NOT draw on the same double-peaked share as sky (see
+  // sunDirectShare above) — it now has its own genuinely monotonic curve instead of being
+  // derived as `1-skyShare`, so sun and sky no longer strictly sum to one pool. Confirmed
+  // acceptable: sun-color correctness matters more here than sun/sky summing to exactly 1.
+  // Cloud strongly redirects the direct beam to diffuse — this is the "clouds shift budget
+  // toward sky more strongly than haze" half of the spec, applied on the sun side. Kept as
+  // its own multiplier (not folded into sunDirectShare) so it doesn't reintroduce a
+  // double-peak shape into sunColor — only totalBudget's mild pool-shrink was touching
+  // cloud before, which wasn't enough to visibly dim a fully overcast sun.
+  // (cloudDirectAtten itself is computed earlier, alongside ambientBase, since the
+  // redirected fraction now needs to land in the sky term too.)
+  const sunDirectFrac = sunDirectShare(elevation) * cloudDirectAtten;
+  // subHorizonFactor(elevation) is the actual "how much direct sunlight is left" magnitude
+  // curve below the horizon — the intensity slider/DAY_CYCLE only floors at 0.3 and is
+  // time-of-day-linked (it doesn't move at all if sunPos is adjusted independently), so
+  // without this the sun was never truly extinguished. This multiplier applies to both
+  // dawn and dusk sides equally (elevation-only, no solarPhase dependence) and reaches
+  // exactly 0 by -18°/astronomical twilight.
+  const effIntensity = totalBudget * sunDirectFrac * subHorizonFactor(elevation);
+
+  // --- Faked secondary bounce (unified-budget redistributive cross-contamination) ---
+  // The engine only lights a surface two ways: direct sun, or sky dome. There is NO third
+  // channel for "sunlit terrain re-emitting into the shadow beside it" — so shadowed faces
+  // next to a bright, sunlit ground stay pitch dark even though real ground bounce would
+  // lift them. This fake models that missing channel as a *redistribution*, not new light:
+  // the terrain reflects a small slice of the sun's own direct beam into the shadow family.
+  // The amount moved is taken out of the sun's cut before anything is computed from it, so
+  // the budget identity — sun + sky == totalBudget — is preserved EXACTLY by construction
+  // (same trick as the cloudDirectAtten redirect above: what the sun gives up, the shadows
+  // get).
+  // The Terrain bounce slider is now keyframed to the noon bell via computeDayCycle/
+  // applyTimeOfDay (0 below 3° elevation, GI_BOUNCE_MAX at solar noon, easing back to 0
+  // below 3° on the way down) and its thumb value IS the bounce budget in the same units as
+  // the sun/sky shares — slider position and actual output contribution are the same number,
+  // no separate gain curve decouples them. clamped only by the sun's own cut (a bounce can
+  // never feed more than the direct sun currently provides, so the budget identity sun+sky
+  // == totalBudget holds even if the slider is keyed high while the sun is low). Hand-
+  // overriding the slider (like intensity/haze) escalates it above the curve until the time
+  // slider or a preset re-keys it.
+  const bounceBudget = Math.min(giBounce, effIntensity); // thumb value directly in budget units
+  let effSunFunded = effIntensity - bounceBudget;                      // sun gives the bounce its energy
+
+  // Twilight sky fade: the sun's indirect illumination dies between -12° and -18°, so the
+  // sky family's OUTPUT brightness fades to black there (budget headroom, kept at 1.0 by
+  // SKY_SHARE_KEYFRAMES down to -60°, is reserved for the moon later — it is "reserved",
+  // not "realized"). Applied to the multi-channel sky outputs below, never to ambientBase/
+  // effIntensity themselves, so the sun+sky budget identity stays exact. Also the sun-
+  // existence gate for sun terms that read dayFactor rather than effSunFunded.
+  const skyAtten = skyAttenuation(elevation);
+  const sunGate  = sunExistenceGate(elevation);
+
+  // As cloud cover thickens, the overhead diffuse dome increasingly floods everything on its
+  // own — a ground-specific bounce color matters proportionally less next to that dome.
+  const effGroundBlend = groundBlend * (1 - overcast*0.6);
+
+  // dayFactor now reads directly off the same unified pool (terrain.GIColor, effect
+  // lighting and fog all draw from it too, per the unification) rather than a separate
+  // direct-light-proportional curve.
+  const dayFactor = Math.min(1, totalBudget);
+  const skyDarkCurve = lerp1(1, 0.4, OD);
+  // Ground bounce color is a *reflection* of incident light — at dawn/dusk the incident
+  // light itself is heavily desaturated by airmass (that's what OD already models for every
+  // direct-lit channel above). The raw ground albedo hex, though, carries none of that: it's
+  // a fixed swatch picked in full daylight. Mixed in unmodified, it fights the sky's own
+  // twilight desaturation and reads as an oversaturated ground tint bleeding into ambient/
+  // canopy/fog right when everything else is going gray-blue. Desaturating the ground input
+  // itself by OD (capped below 1 so bounce color never goes fully neutral) before any mixing
+  // keeps the two contributions consistent at low sun angles.
+  const groundAlbedoAtm = desat(groundAlbedo, Math.min(0.85, OD*0.75));
+  // Deep-night asymptote for the sky dome. C already carries the correct hue (haze/altitude
+  // driven, no elevation warm-bleed — see hazeToKelvinSky), so darkness should desaturate
+  // toward *this* dark navy rather than multiply straight to [0,0,0]. The blend weight is
+  // biased with a power curve so the floor stays negligible through day/dusk and only takes
+  // over once dayFactor*skyDarkCurve is genuinely near zero (deep twilight/night).
+  const NIGHT_SKY_FLOOR = [0.035, 0.05, 0.09];
+
+  let sunColor            = scaleToFit(mul(sunHue, effSunFunded)); // sun's own draw on the same light budget as skycolor — scaleToFit (hue-preserving, only scales down on overshoot) mirrors exactly how ambientBase/skyBrightness get normalized for skycolor below, so sun and sky stay on equal budget footing instead of sun alone being left uncapped; the sun is drawn at effSunFunded (post-bounce) so the bounce it funded is exactly what shadows gain — the pool is conserved
+  const skyBrightness       = ambientBase + bounceBudget; // sky's cut of the unified budget, PLUS the sun-funded stale terrain bounce it inherited (see bounce block above) — on the same footing as sunColor: the sun's magnitude is budget * sunDirectShare * subHorizonFactor with NO opticalDepth multiplier, so the sky's must be budget * skyShare directly — the old `*skyDarkCurve` was asymmetric extinction on one side of the same pool. OD still shapes the sky family below via the per-family floors (all scaled by skyDarkCurve) and effectShadowColor. Because the bounce was carved out of effIntensity BEFORE any sun term was computed, the pool identity sun+sky==totalBudget still holds exactly at every preset and overcast level.
+  // skycolor, staticSkyColor and treeAmbientColor are the "shadow terms" for geometric
+  // objects — all three now share this one curve (skyBrightness = ambientBase + bounceBudget)
+  // with no per-term artificial floor: noon is where the sky's cut of the budget sinks to
+  // its minimum, so noon is where the shadow family genuinely bottoms out darkest — that
+  // observed dip is the *honest* budget result, not an artifact to be masked. The fake-GI
+  // bounce slider (gated to the noon band by noonFillWeight) is the only tool that lifts it
+  // again, so the dip's shape and its "noon = darkest" character both survive by construction.
+  // Pre-bounce base for the floor lerp: the NIGHT_SKY_FLOOR blend weight must be pinned to
+  // the giBounce-independent magnitude, or raising shadow-family brightness with the slider
+  // would bend skycolor's hue toward pure C (floor weight wanes as its *brightness* rises).
+  // The bounce is therefore applied as a uniform gain AFTER the hue-determining blend — a
+  // per-channel scale preserves hue exactly by construction, so giBounce can only brighten
+  // the shadow family, never tint it.
+  const skyHueBase          = ambientBase;
+  const skyFloorWeight      = Math.pow(1-skyHueBase, 4);
+  const skyBounceGain       = 1 + bounceBudget / Math.max(ambientBase, 1e-6);
+  // scaleToFit, not clamp01, on the raw magnitude — ambientBase can legitimately exceed 1
+  // now that it's a genuine share/(1-share) ratio rather than a capped number, and clamping
+  // each channel independently erases hue exactly when there's overshoot (golden hour clipped
+  // straight to flat white). Scaling proportionally keeps the color's hue intact; only the
+  // final NIGHT_SKY_FLOOR blend and safety clamp still need clamp01.
+  let skycolor           = mul(clamp01(mul(lerp(scaleToFit(mul(C, skyHueBase)), NIGHT_SKY_FLOOR, skyFloorWeight), skyBounceGain)), skyAtten);
+  let ambientcolor       = mul(scaleToFit(lerp(mul([1,1,1],ambientMag), mul(groundAlbedoAtm,ambientMag), effGroundBlend)), skyAtten);
+  let sunSpecColor       = clamp01(mul(sunHue, Math.min(1, effSunFunded)));
+  let terrainSunColor      = scaleToFit(mul(sunHue, effSunFunded * terrainB)); // terrainB is a boost multiplier on the actual direct-light budget, not a substitute for it — dividing by intensity here previously cancelled the intensity dependence entirely
+  let terrainSkyColor    = mul(clamp01(mul(desat(C,0.25), 0.86*skyBrightness)), skyAtten);
+  const waterSunIntensity  = Math.min(0.9, effSunFunded*0.25);
+  // Static-family budget divergence under cloud: the global redirect (0.85) drenches EVERY
+  // surface type with the same flat diffuse sweep, flattening baked/static geometry to
+  // silhouette at full overcast. Statics get their own, shallower cloud redirect (0.75 at
+  // full cover, hand-tuned) so a fully overcast sky still leaves a quarter of the
+  // direct-beam character intact on static structures — the divergence between statics and
+  // live-mesh family is deliberate.
+  // Mirror of the global split above (same pool math, different redirect constant): the sun
+  // keeps staticCloudAtten and the redirect the sky gains back is (1-staticCloudAtten), so
+  // static sun + static sky still conserve totalBudget exactly. The bounce carve rides the
+  // static sun like the global one, so giBounce lifts static shadows by the same mechanism
+  // and only ever dims this local sun. Hue/desat chains untouched — purely a budget split.
+  const staticCloudAtten = 1 - overcast*0.75;
+  // Static sky must NOT absorb the full cloud-redirected diffuse share, or statics BRIGHTEN
+  // under clouds — clouds never add light. The static sky realizes the redirected diffuse
+  // at an efficiency (staticSkyRedirectEff) that tapers with cover; the redirect strength
+  // itself is hand-tuned (0.75 at full cover, above). At oc=1 this leaves ~20% of the pool
+  // unreached (static total 2.81 vs clear 3.38 RGB-sum at the reference fixture: noon,
+  // clean, haze 0, alt 200) — the intended cloud loss that keeps statics from glowing up
+  // under overcast. Clear sky inert (redirect is zero); hue/desat untouched.
+  const staticSkyRedirectEff = lerp1(1, 0.6865, overcast);
+  const staticSunFunded  = totalBudget * sunDirectShare(elevation) * staticCloudAtten * subHorizonFactor(elevation) - bounceBudget;
+  const staticSkyBright  = totalBudget * (skyShare + (1-skyShare)*(1-staticCloudAtten)*staticSkyRedirectEff) + bounceBudget;
+  let staticSunColor       = clamp01(mul(sunHue, staticI*Math.min(1,staticSunFunded)));
+  let staticSpecularColor= clamp01(mul(sunHue, Math.min(1, staticI*1.2) * Math.min(1,effSunFunded))); // specular is a direct/coherent-light phenomenon — must attenuate with cloud cover like sunSpecColor on the GLOBAL curve (only the baked-diffuse staticSunColor uses the shallower static-specific redirect); specular is a live spec highlight, not baked geometry, so it rides the same cloud attenuation as the rest of the direct family
+  // staticSkyColor feeds baked/static (LDR) lighting, not a live-rendered value like skycolor
+  // — it formerly carried the largest artificial floor of the shadow family because baked
+  // geometry in shadow was reading near-black at high sun. That floor is gone: static now
+  // tracks the same honest skyBrightness as its siblings (so the shared noon dip appears in
+  // baked statics too), and any lift comes from the noon-gated giBounce slider exactly like
+  // everywhere else in the shadow family — one mechanism, not four ad-hoc constants.
+  // Faked-GI hue bleed: this engine's baked statics have no real reflected light, so terrain.
+  // sunColor's hue (not its brightness) is bled into the shadow term to stand in for warm
+  // light bouncing off sunlit ground onto shadowed statics. Elevation-only weight (a hue
+  // question, same pattern as every other curve in this file) — pure blue skylight above
+  // ~60° elevation, peaking (still capped below full terrain-dominance) just above the sun/
+  // sky parity point, then receding back toward pure blue through dusk and into night. Uses
+  // terrainSunColor's pre-dawn-swap value: that's the direct-sunlit-terrain color actually
+  // doing the reflecting, not the already-desaturated/swapped broad-coverage compromise.
+  const terrainBounceHue   = normMax1(terrainSunColor);
+  const terrainBleed       = terrainBleedWeight(elevation);
+  const staticSkyHue       = lerp(desat(C,0.3), terrainBounceHue, terrainBleed);
+  let staticSkyColor     = mul(scaleToFit(mul(staticSkyHue, staticSkyBright)), skyAtten); // static sky renders its FULL scalar budget share — the 0.86 coefficient the global shadow-family (terrain/tree) legs carry is not applied here, so the static sky realizes the (hand-tuned 0.75) redirect instead of riding the global 0.85 sweep. staticSkyRedirectEff then tapers that absorbed redirect so statics (unlike live meshes) actually LOSE light under clouds instead of glowing up.
+  // Dawn only (dusk is meant to stay dramatically orange-to-dark): a low dawn sun has an
+  // intensely saturated hue at the same time direct-beam coverage is genuinely small, so
+  // driving broad-coverage terms (terrain, static, bundled-mesh sunColor) fully off that
+  // saturated hue drenches the whole scene orange. Blend those three — not their specular or
+  // tree counterparts — toward their sky/ambient counterparts, fading in only near the dawn
+  // horizon and back out by mid-morning, reusing the same curve as the twilight glow.
+  const dawnSwapWeight = solarPhase<0 ? OD*subHorizonFactor(elevation) : 0;
+  const ambientNoGroundRaw = clamp01(mul([1,1,1],ambientMag)); // sunColor is vehicles/weapons only — must blend with environment, not follow ground albedo
+  sunColor       = hueSwap(sunColor, ambientNoGroundRaw, dawnSwapWeight);
+  terrainSunColor= hueSwap(terrainSunColor, terrainSkyColor, dawnSwapWeight);
+  staticSunColor = hueSwap(staticSunColor, staticSkyColor, dawnSwapWeight);
+  const duskBandGate = elevation<=0 ? 1 : Math.max(0, 1-elevation/DENT_ELEV);
+  const duskDesatW = solarPhase>0 ? duskBandGate*subHorizonFactor(elevation) : 0;
+  const dawnDesatW = solarPhase<0 ? duskBandGate*subHorizonFactor(elevation) : 0;
+  sunColor        = desat(sunColor, duskDesatW*0.6);
+  lastSunColor    = sunColor; // expose the real final sunColor for anything (e.g. the foliage ground-blend gate) that needs to react to actual sun attenuation, not a re-derived approximation
+  lastSunPreBounce = sunColor.map(v => v * (effIntensity / Math.max(effSunFunded, 1e-9))); // same final sunColor un-dimmed by the bounce — the ground-blend auto-track reads THIS so the giBounce slider can only brighten shadow-family colors, never move the ground-tint hue gate (hue contamination is exactly what the bounce must not do)
+  terrainSunColor = desat(terrainSunColor, duskDesatW*0.6);
+  staticSunColor  = desat(staticSunColor, duskDesatW*0.6);
+  staticSpecularColor = desat(staticSpecularColor, duskDesatW*0.6 + dawnDesatW*0.6);
+  let effectSunColor     = mul(clamp01(mul(desat(lerp(W,[1,1,1],0.6), haze/10*0.6), dayFactor)), sunGate);
+  let effectShadowColor  = mul(clamp01(mul(C, shadowD*dayFactor*skyDarkCurve*skyBounceGain)), skyAtten);
+  // canopyBoost removed (historical): a flat "canopy sees more open sky" boost was only
+  // true for upper tree crowns and backwards for shadowed shrubs, since this cvar covers
+  // the engine's whole "tree" family including low shrubs — no per-mesh-type exposure
+  // assumption baked in.
+  // treeSunColor computed here (ahead of treeAmbientColor) so its own brightness can gate
+  // how much ground-albedo bounce reaches the canopy below.
+  let treeSunColor         = desat(clamp01(mul(sunHue, Math.min(1, effSunFunded))), duskDesatW*0.6 + dawnDesatW*0.6); // budget-correct sun magnitude, independent of staticI — baked/LDR intensity slider affects statics only, never foliage
+  // Ground bounce onto foliage requires sunlit ground to bounce off in the first place — a
+  // linear scale on effGroundBlend by the sun's own brightness, same pattern as haze: a
+  // manually-set/default slider value that's then scaled down by what's actually happening
+  // (night, heavy overcast, deep dusk all dim the sun toward black). Pinned to the pre-bounce
+  // sun magnitude (effIntensity, before giBounce carved bounceBudget into the shadow family)
+  // so the foliage ground-tint insert is a pure brightness gate — hue stays bit-exact as
+  // giBounce rises, consistent with the brightness-only cross-contamination guarantee.
+  const treeGroundBlend    = effGroundBlend * Math.min(1, effIntensity * 1.2);
+  // treeAmbientColor now follows the same shared curve as skycolor/staticSkyColor above
+  // (skyBrightness = ambientBase + bounceBudget), no per-term floor — same honest noon dip
+  // as its siblings, same single noon-gated giBounce lift. No separate foliageSunFactor or
+  // per-mesh-type exposure assumption.
+  let treeAmbientColor   = mul(scaleToFit(mul(lerp(desat(C,0.25), groundAlbedoAtm, treeGroundBlend), 0.86*skyBrightness)), skyAtten); // canopy sky bounce, blended toward ground tint low in the foliage — desat(C,0.25) models genuine multi-scattering saturation loss between overlapping leaves, matching terrainSkyColor/staticSkyColor treatment
+  // treeSkyColor is decoupled from staticSkyColor: the canopy keeps the GLOBAL diffuse curve
+  // (skyBrightness, the pre-divergence static treatment) — only the static family shifts to the
+  // shallower 75/25 cloud redirect above; foliage stays on the shared overcast sweep so the
+  // definition gain is exclusive to baked/static structures.
+  let treeSkyColor       = clamp01(mul(mul(scaleToFit(mul(staticSkyHue, 0.86*skyBrightness)), skyAtten), 0.99));
+  // Fog color is the "fade to" color at distance — physically it should track the same
+  // sun/sky illuminant blend everything else uses (so it inherits aerosol tint, cloud cover,
+  // and twilight glow automatically), plus a touch of ground albedo since low-lying haze
+  // picks up some tint from what's beneath it. A thicker fog bank reads as a *more* decisive
+  // reflection of its surroundings, not a paler one — so desaturation here is a small fixed
+  // amount (representing real multiple-scattering softening), not something that scales up
+  // with haze the way the old formula did.
+  let fogHue = lerp(sunHue, C, 0.5);
+  fogHue = lerp(fogHue, groundAlbedoAtm, effGroundBlend*0.2);
+  fogHue = desat(fogHue, 0.25);
+  let fogColor01         = mul(clamp01(mul(fogHue, dayFactor*fogb)), skyAtten);
+  let fogColor255        = fogColor01.map(v=>Math.round(v*255));
+
+  // Elevation overbright — thinner air at altitude means less atmospheric extinction of the
+  // direct beam by the time it reaches the ground, so the sun can genuinely read brighter
+  // than a sea-level noon even at the same intensity/haze setting. Applied as the absolute
+  // final step, after every internal consumer of these four colors has already run —
+  // lastSunColor (ground-blend auto-tracking), the dawn-swap hueSwap magnitudes, terrainBounceHue,
+  // and treeGroundBlend all read the pre-boost values above, so this multiplier only ever
+  // inflates what gets exported, never anything computed off of these colors. A flat per-
+  // channel scale on an already-normalized/clamped color preserves hue exactly (same logic
+  // as scaleToFit, just uphill instead of down). Confirmed in-engine HDR headroom above 1.0
+  // exists for these four cvars — scope stays limited to them; specular terms excluded.
+  const elevationSunBoost = lerp1(1, 1.2, altitudeFactor);
+  sunColor        = mul(sunColor, elevationSunBoost);
+  terrainSunColor = mul(terrainSunColor, elevationSunBoost);
+  staticSunColor  = mul(staticSunColor, elevationSunBoost);
+  treeSunColor    = mul(treeSunColor, elevationSunBoost);
+
+  lastBudget = { totalBudget, ambientBase, effIntensity, bounceBudget, effSunFunded, skyBrightness, sunOut: Math.max.apply(null, sunColor), skyOut: Math.max.apply(null, skycolor) };
+
+  // ---- Moon regime (Step 2) ----
+  // Moonlight is an automatic *replacement* light source, not a tint on the dead sun: when
+  // active, the entire output block above (budget split, hue chain, foliage) is discarded and
+  // rebuilt from a single conceptual moon illuminant. It activates automatically whenever the
+  // sun is gone — elevation ≤ -15° (moonrise/moonset at dawn/dusk); there is no user control
+  // (the disabled checkbox is a passive status note). Brightness eases in from 0/0/0 at -15°
+  // to the 0.55×-of-noon peak at 0:00, so nothing above -15° ever changes and there is no
+  // abrupt jump-in at the horizon.
+  // Capture day family colors before the moon block potentially overwrites them. Needed for
+  // the transition-gradient floor below, which runs after the moon if/else regardless of which
+  // branch executed.
+  const daySkycolor        = skycolor;
+  const dayAmbientcolor    = ambientcolor;
+  const dayTerrainSkyColor = terrainSkyColor;
+  const dayStaticSkyColor  = staticSkyColor;
+  const dayEffectShadowColor = effectShadowColor;
+  const dayTreeAmbientColor  = treeAmbientColor;
+  const dayTreeSkyColor      = treeSkyColor;
+  const dayFogColor01        = fogColor01;
+  const dayKS = kSun, dayKN = kSky;
+  const moonActive = elevation <= -15;
+  if(moonActive){
+    // Moon elevation parameter: 0 at rise/set (-15°), 1 at 0:00 (-60° peak). The moon rides
+    // the same SUNPOS_KEYFRAMES curve as the sun (highest point at midnight).
+    const moonElev01 = Math.max(0, Math.min(1, (-elevation - 15)/45));
+    // Moonrise band: -15°..-25° is MOON-LESS. The sun family reads 0/0/0 there (no moon beam
+    // yet); the sky family carries an independent night-sky illumination (NIGHT_SKY_COLOR) on
+    // a bell curve that fades in from -15°, peaks at ≈ -20° and dies beyond ≈ -35°. The direct
+    // moonlight beam is gated to start only once that band ends (≈ -25°), then rises exactly
+    // as before — and its growing share "steals" the night-sky share, so night sky hands straight
+    // over to moon sky instead of stacking on top of it.
+    const SUN_GATE_START = 10/45; // ≈ -25°: the moon's direct beam stays 0/0/0 before this
+    const sunGate = smoothstep01((moonElev01 - SUN_GATE_START) / (1 - SUN_GATE_START));
+    // Brightness envelope, applied on top of the gate. Peak sun draws 0.55 × the noon sun
+    // reference RGB [0.8159, 0.8703, 1.0000]. The sky family is the literal shadow color of
+    // moonlight — it must read much dimmer than the lit moon, so it draws 0.4 × the 0.86 share
+    // (0.344 × sun; 0.189 peak). Overcast genuinely swallows moonlight harder than daylight
+    // (diffuse reflected beam routed through cloud) — separate, deeper shrink with a 0.55
+    // floor instead of daytime's 0.85.
+    const brightEnvelope = sunGate * lerp1(1, 0.55, overcast);
+    const moonBudget     = 0.55 * brightEnvelope; // sun family peak = 0.55× reference
+    const moonSkyBudget  = moonBudget * 0.344;    // sky/shadow family = 0.4 × the 0.86 share
+    // NIGHT_SKY bell: rises 0 at -15° to FULL at ≈ -18° (NIGHT_SKY_COLOR peak), then HOLDS that
+    // plateau until ≈ -25° (where the moon gate opens). From -25° the bell fades in sync with
+    // the gate rise, so the total sky = night×bell + moon×gate is a smooth monotone decline
+    // from the 0.30 plateau to the moon's 0.189 sky peak at 0:00 — no dark trough, no uptick.
+    // Clouds dim the night-sky component harder than the moon beam (they hide stars/light
+    // pollution outright), so the handoff is slightly more abrupt under overcast.
+    const NIGHT_SKY_PEAK = 3/45;  // ≈ -18°: full night-sky brightness reached at astronomical twilight end
+    const NIGHT_SKY_HOLD = 10/45; // ≈ -25°: plateau holds until moon gate opens, then bell fades
+    const NIGHT_SKY_FADE = 1 - NIGHT_SKY_HOLD; // fade width → night sky gone by ≈ -60° (peak moon)
+    const nightBell = moonElev01 < NIGHT_SKY_PEAK
+      ? smoothstep01(moonElev01 / NIGHT_SKY_PEAK)
+      : moonElev01 < NIGHT_SKY_HOLD
+        ? 1
+        : smoothstep01((NIGHT_SKY_HOLD + NIGHT_SKY_FADE - moonElev01) / NIGHT_SKY_FADE);
+    // No (1-sunGate) factor: the bell fade is calibrated to match the gate rise, so
+    // nightSky = NIGHT*bell + moonSky*gate gives a smooth monotone decline from the 0.30
+    // plateau to the moon's 0.189 sky peak — no dark trough, no uptick at 0:00.
+    const nightEnv = nightBell * lerp1(1, 0.4, overcast);
+    const nightSkyC   = scaleToFit(mul(NIGHT_SKY_COLOR, nightEnv));
+    const nightSkyC25 = scaleToFit(mul(desat(NIGHT_SKY_COLOR, 0.25), nightEnv));
+    const nightSkyC30 = scaleToFit(mul(desat(NIGHT_SKY_COLOR, 0.3), nightEnv));
+    // Purkinje shift in kelvin: the dimmest moon (rise/set) reads coolest — scotopic vision
+    // blue-shifts weak light, so the shift is STRONGEST (+2000K) when the moon is weakest
+    // and eases to its weakest (+1000K) at the brightest, highest point. Applied on top of
+    // the fixed cool-blue MOON_COLOR base (kelvinToRGB(8600) ≈ MOON_COLOR).
+    const kMoon = MOON_BASE_KELVIN + lerp1(2000, 1000, moonElev01);
+    let moonHue = normMax1(kelvinToRGB(kMoon));
+    // Haze counteracts the cold base by warming toward the ~4300K haze-lit moon and slightly
+    // desaturating (moisture/particulates wash out the blue), proportionally to haze slider.
+    moonHue = lerp(moonHue, kelvinToRGB(4300), Math.min(1, haze/10)*0.35);
+    moonHue = desat(moonHue, Math.min(1, haze/10)*0.12);
+    // Dedicated, more neutral aerosol tint set for the moon (day tints over-warm a scene
+    // with no sun to key them off), blended by the same aerosolBlend weight as the sky.
+    moonHue = lerp(moonHue, MOON_AEROSOL_TINTS[aerosolKey], aerosolBlend);
+    // High-altitude turbidity through the moonlit air column: volcanic/smoke → blood-moon
+    // red, clean+maritime → slight blue, dust → warm. Reuses the twilight gate/strength
+    // curves (the sun's own twilight-glow band is irrelevant here).
+    moonHue = normMax1(lerp(moonHue, MOON_STRATO_TINT[aerosolKey], Math.min(0.6, twilightGate*stratoAerosol)*twilightStrength));
+    // Overcast washes the moon toward neutral cloud-gray, matching the day sky's handling.
+    moonHue = normMax1(lerp(moonHue, cloudGray, overcast*0.85));
+    // Sun family draws the gated moon budget (0/0/0 across the moon-less band, then the full
+    // 0.55× reference at 0:00). Sky family is ADDITIVE: night sky fades its own share by (1−sunGate)
+    // while the moon sky rises independently on its gated budget — no double-gating, no lerp-re-
+    // multiplication. At −15° the night sky bell is near zero so sky is near-black; it ramps to
+    // NIGHT_SKY_COLOR [0.22,0.24,0.30] at −20°, then hands off to the moon sky as the sun gate
+    // opens; at −60° the moon sky holds the full current 0.189 peak with no residual night term.
+    // Foliage gets the same treatment as every other color: treeSunColor rides the full moon
+    // budget like sunColor, and the canopy sky terms ride the additive sky with NO ground-albedo
+    // influence (the daylight treeGroundBlend lerp is sunlit-ground bounce — filtered moonlight
+    // and starlight have nothing to bounce off at night, so it is dropped entirely). giBounce
+    // forced off: the fake-GI shadow compensator is a sun-beam phenomenon.
+    const moonSkyC   = scaleToFit(mul(moonHue, moonSkyBudget));
+    const moonSkyC25 = scaleToFit(mul(desat(moonHue, 0.25), moonSkyBudget));
+    const moonSkyC30 = scaleToFit(mul(desat(moonHue, 0.3), moonSkyBudget));
+    sunColor        = scaleToFit(mul(moonHue, moonBudget));
+    terrainSunColor = scaleToFit(mul(moonHue, moonBudget * terrainB));
+    staticSunColor  = clamp01(mul(moonHue, staticI * Math.min(1, moonBudget)));
+    staticSpecularColor = clamp01(mul(moonHue, Math.min(1, staticI*1.2) * Math.min(1, moonBudget)));
+    sunSpecColor    = clamp01(mul(moonHue, Math.min(1, moonBudget)));
+    effectSunColor  = scaleToFit(mul(moonHue, moonBudget));
+    treeSunColor    = scaleToFit(mul(moonHue, moonBudget)); // foliage reads the moon like any other direct-lit surface
+    skycolor        = scaleToFit(addC(nightSkyC,   moonSkyC));
+    ambientcolor    = scaleToFit(addC(nightSkyC,   moonSkyC));
+    terrainSkyColor = scaleToFit(addC(nightSkyC25, moonSkyC25));
+    staticSkyColor  = scaleToFit(addC(nightSkyC30, moonSkyC30));
+    effectShadowColor = clamp01(mul(addC(nightSkyC, moonSkyC), shadowD));
+    treeAmbientColor  = scaleToFit(addC(nightSkyC25, moonSkyC25)); // additive sky, no albedo
+    treeSkyColor      = scaleToFit(addC(nightSkyC25, moonSkyC25)); // canopy sky = canopy ambient, no albedo
+    // Fog: brightness tracks the terrain GI (the same night+moon sky stack, desaturated like
+    // the canopy terms, ground-albedo free) at a fixed ratio that eases from 0.41× at -15°
+    // (where the day carryover already delivers that brightness relation) into 1.17× by -46°,
+    // then holds. No normMax1 inflation and no fogb in the night band — the OLD formula blew
+    // the moonless plateau up to ~0.71 (144/153/181) by normalizing NIGHT_SKY_COLOR's max
+    // channel to 1.0 and multiplying by fogMag (1.0) × fogb (0.74).
+    const fogRatio = lerp1(0.41, 1.17, smoothstep01(moonElev01 / (31/45)));
+    fogColor01  = clamp01(mul(desat(addC(nightSkyC25, moonSkyC25), 0.25), fogRatio));
+    fogColor255 = fogColor01.map(v=>Math.round(v*255));
+    // ---- Day carryover merge ----
+    // Add the captured daytime twilight family on top of the night model. Day terms are exactly
+    // 0 at -18° (astronomical twilight end), so below -18° this merge is a no-op and deep night
+    // stays byte-identical to the moon-only block. At -15° the night terms are 0, so the output
+    // equals the day model (byte-identical to premoon). Between them the two sources co-exist:
+    // the sun-regime family continues to brighten the sky while the night model adds its own.
+    skycolor        = addC(daySkycolor,        skycolor);
+    ambientcolor    = addC(dayAmbientcolor,    ambientcolor);
+    terrainSkyColor = addC(dayTerrainSkyColor, terrainSkyColor);
+    staticSkyColor  = addC(dayStaticSkyColor,  staticSkyColor);
+    effectShadowColor = clamp01(addC(dayEffectShadowColor, effectShadowColor));
+    treeAmbientColor  = addC(dayTreeAmbientColor, treeAmbientColor);
+    treeSkyColor      = addC(dayTreeSkyColor, treeSkyColor);
+    fogColor01      = clamp01(addC(dayFogColor01, fogColor01));
+    fogColor255     = fogColor01.map(v=>Math.round(v*255));
+    // Kelvins: blend from the lingering day tint to the moon exactly as the carryover fades
+    // (weight 0 at -15° → 1 at -18°), so the config note stays truthful through the handoff.
+    const kDayW = smoothstep01(moonElev01 / (3/45));
+    kSun = lerp1(dayKS, kMoon, kDayW);
+    kSky = lerp1(dayKN, kMoon, kDayW);
+    // Ground-blend auto-track and the config-note kelvins must reflect the moon, not the stale
+    // day values. giBounce is off, so lastSunPreBounce == lastSunColor (no carve-out to undo).
+    lastSunColor       = sunColor;
+    lastSunPreBounce   = sunColor;
+    lastBudget = { totalBudget: moonBudget, ambientBase: moonSkyBudget, effIntensity: moonBudget, bounceBudget: 0, effSunFunded: moonBudget, skyBrightness: moonSkyBudget, sunOut: Math.max.apply(null, sunColor), skyOut: Math.max.apply(null, skycolor) };
+  }
+  // ---- Dawn transition gradient ----
+  // In the -18°..-12° zone both the day and night terms are individually weak: the day sky
+  // is dim (low pre-dawn intensity + skyAttenuation) while the night bell drops to 0 at -15°.
+  // The additive merge (or the day-only branch) produces a trough that dips well below the
+  // NIGHT_SKY plateau. This gradient floor blends smoothly from the night plateau at -18° to
+  // the user-specified pre-dawn target at -12°, ensuring no field ever dips below its
+  // intended brightness. Where the computed value is already brighter, it passes through
+  // unchanged.
+  if(elevation >= -18 && elevation <= -12){
+    const g = smoothstep01((elevation + 18) / 6); // 0 at -18°, 1 at -12°
+    // Night plateaus at full night (nightEnv=1)
+    const nightPlateauSky   = NIGHT_SKY_COLOR;
+    const nightPlateauSky25 = desat(NIGHT_SKY_COLOR, 0.25);
+    const nightPlateauSky30 = desat(NIGHT_SKY_COLOR, 0.3);
+    // Day endpoints: the natural day model output for every field (already monotone vs
+    // plateau) — skycolor no longer gets a hardcoded target, so it inherits the twilight
+    // aerosol tint exactly like terrain.GIColor does (both read their own day output).
+    const dayEndSky   = daySkycolor;
+    const dayEndAmb   = dayAmbientcolor;
+    const dayEndGI    = dayTerrainSkyColor;
+    const dayEndSSC   = dayStaticSkyColor;
+    const dayEndTree  = dayTreeAmbientColor;
+    const dayEndFog   = dayFogColor01;
+    // Gradient = smooth blend from night plateau → day endpoint, used as floor on each field
+    skycolor        = skycolor.map((v,i) => Math.max(v, lerp1(nightPlateauSky[i],   dayEndSky[i],  g)));
+    ambientcolor    = ambientcolor.map((v,i) => Math.max(v, lerp1(nightPlateauSky[i],   dayEndAmb[i],  g)));
+    terrainSkyColor = terrainSkyColor.map((v,i) => Math.max(v, lerp1(nightPlateauSky25[i], dayEndGI[i],  g)));
+    staticSkyColor  = staticSkyColor.map((v,i) => Math.max(v, lerp1(nightPlateauSky30[i], dayEndSSC[i],  g)));
+    treeAmbientColor = treeAmbientColor.map((v,i) => Math.max(v, lerp1(nightPlateauSky25[i], dayEndTree[i], g)));
+    treeSkyColor    = treeSkyColor.map((v,i) => Math.max(v, lerp1(nightPlateauSky25[i], dayEndTree[i], g)));
+    // effectShadowColor and fog excluded: shadow terms are naturally much dimmer than sky
+    // (multiplied by shadowD/fogb); flooring them at the sky plateau would over-brighten
+    // shadows and fog in the transition zone, breaking premoon identity above -15°.
+  }
+
+  // ---- swatches ----
+  const rows = {
+    'grp-sun':[
+      ['Lightmanager.sunColor', sunColor, fmt(sunColor)],
+      ['terrain.sunColor', terrainSunColor, fmt(terrainSunColor)],
+      ['Lightmanager.staticSunColor', staticSunColor, fmt(staticSunColor)],
+      ['Lightmanager.treeSunColor', treeSunColor, fmt(treeSunColor)],
+      ['Lightmanager.effectSunColor', effectSunColor, fmt(effectSunColor)],
+      ['Lightmanager.sunSpecColor', sunSpecColor, fmt(sunSpecColor)],
+      ['Lightmanager.staticSpecularColor', staticSpecularColor, fmt(staticSpecularColor)],
+    ],
+    'grp-sky':[
+      ['Lightmanager.skycolor', skycolor, fmt(skycolor)],
+      ['terrain.GIColor', terrainSkyColor, fmt(terrainSkyColor)],
+      ['Lightmanager.staticSkyColor', staticSkyColor, fmt(staticSkyColor)],
+      ['Lightmanager.treeAmbientColor', treeAmbientColor, fmt(treeAmbientColor)],
+      ['Lightmanager.effectShadowColor', effectShadowColor, fmt(effectShadowColor)],
+    ],
+    'grp-fog':[
+      ['Renderer.fogColor', fogColor01, fogColor255.join('/')],
+    ],
+    'grp-unused':[
+      ['Lightmanager.ambientcolor', ambientcolor, fmt(ambientcolor)],
+      ['Lightmanager.treeSkyColor', treeSkyColor, fmt(treeSkyColor)],
+    ],
+  };
+  Object.entries(rows).forEach(([groupId, list])=>{
+    const container = el(groupId);
+    container.innerHTML='';
+    list.forEach(([name, rgb01, text])=>{
+      const c = clamp01(rgb01);
+      const hex = '#'+c.map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('');
+      const div = document.createElement('div');
+      div.className='swatch';
+      div.innerHTML = `<div class="chip" style="background:${hex}"></div>
+        <div class="info"><div class="name">${name}</div><div class="rgb">${text}</div></div>`;
+      container.appendChild(div);
+    });
+  });
+
+  // ---- config text ----
+  const lines = [
+    `Lightmanager.skycolor ${fmt(skycolor,6)}`,
+    `Lightmanager.ambientcolor ${fmt(ambientcolor,6)}`,
+    `Lightmanager.sunColor ${fmt(sunColor,6)}`,
+    `Lightmanager.sunSpecColor ${fmt(sunSpecColor,6)}`,
+    ``,
+    `terrain.sunColor ${fmt(terrainSunColor,6)}`,
+    `terrain.GIColor ${fmt(terrainSkyColor,6)}`,
+    ``,
+    `Lightmanager.staticSunColor ${fmt(staticSunColor,6)}`,
+    `Lightmanager.staticSpecularColor ${fmt(staticSpecularColor,6)}`,
+    `Lightmanager.staticSkyColor ${fmt(staticSkyColor,6)}`,
+	``,
+    `Lightmanager.effectSunColor ${fmt(effectSunColor,6)}`,
+    `Lightmanager.effectShadowColor ${fmt(effectShadowColor,6)}`,
+    ``,
+    `Lightmanager.treeAmbientColor ${fmt(treeAmbientColor,6)}`,
+    `Lightmanager.treeSunColor ${fmt(treeSunColor,6)}`,
+    `Lightmanager.treeSkyColor ${fmt(treeSkyColor,6)}`,
+    ``,
+    `Renderer.fogColor ${fogColor255.join('.00/')}.00`,
+  ];
+  el('output').textContent = lines.join('\n');
+  el('ccNote').textContent = `Sun ≈ ${Math.round(kSun)}K · Sky ≈ ${Math.round(kSky)}K`;
+}
+
+// Runs render() once to get the real, fully-attenuated sunColor (haze/overcast/altitude/
+// aerosol/terrainB — everything) into lastSunColor, updates the foliage ground-blend
+// slider from that real output if it's still auto-tracking, then renders again so the display
+// is fully consistent with the (possibly just-updated) slider. This runs on every input that
+// can affect sun brightness, not just time-of-day, so the slider reacts to haze/overcast/etc.
+// exactly like the user expects — not only to time-of-day changes.
+function renderWithGroundSync(){
+  render();
+  if(groundBlendAuto){
+    const sunPos = +el('sunPos').value;
+    const elevation = 90 - Math.abs(90 - sunPos);
+    if(elevation <= -15){
+      // Moon regime: ground albedo exerts zero influence on foliage at night — the auto-track
+      // must report that truth (0.00) instead of moving the slider to a moon-brightness-derived
+      // value that would imply an influence that doesn't exist.
+      el('groundBlend').value = '0.00';
+    } else {
+      const peak = Math.max(lastSunPreBounce[0], lastSunPreBounce[1], lastSunPreBounce[2]);
+      el('groundBlend').value = Math.min(1, peak*1.2).toFixed(2);
+    }
+  }
+  render();
+}
+
+inputs.forEach(id=> el(id).addEventListener('input', ()=>{ groundBlendAuto = true; renderWithGroundSync(); }));
+el('groundBlend').addEventListener('input', ()=>{ groundBlendAuto = false; render(); }); // manual pin — resumes auto-tracking once any other relevant input changes
+el('sunPos').addEventListener('input', ()=>{ groundBlendAuto = true; renderWithGroundSync(); });
+el('timeOfDay').addEventListener('input', ()=>{ applyTimeOfDay(+el('timeOfDay').value); renderWithGroundSync(); });
+el('aerosol').addEventListener('change', ()=>{ groundBlendAuto = true; renderWithGroundSync(); });
+el('groundAlbedo').addEventListener('input', ()=>{ groundBlendAuto = true; renderWithGroundSync(); });
+el('copyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(el('output').textContent);
+  const b = el('copyBtn');
+  const old = b.textContent;
+  b.textContent = 'Copied';
+  setTimeout(()=>b.textContent=old, 1200);
+});
+
+renderWithGroundSync();
+</script>
+</body>
+</html>
