@@ -8,6 +8,8 @@ Color brightness adjusts light strength. Setting a light to 0/0/0 turns it off, 
 
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
 
+Download the latest .html and open it in your browser.
+
 ---------------------------------------------------------------
 Controllers 
 ---------------------------------------------------------------
