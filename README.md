@@ -5,8 +5,8 @@ that can be copy-pasted into Battlefield 2 map light settings in the sky.con fil
 
 Battlefield 2 rendering logic: 
 Color brightness adjusts light strength. Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white.
+
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
- 
 
 ---------------------------------------------------------------
 Controllers 
