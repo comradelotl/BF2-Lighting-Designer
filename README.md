@@ -54,7 +54,7 @@ This makes for a distinct look for maps like i.e. Fushe Pass.
 Sun Position
 ------------
 Where the sun currently sits relative to the observer. At 0° it's at the horizon at dawn or dusk and gives off warm light. 
-At 90° it's directly above your head at noon, is the brightest and gives off white-ish light.
+At 90° it's directly above your head at noon, and gives off bright white-ish light.
 
 Sun intensity
 ------------
