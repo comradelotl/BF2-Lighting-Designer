@@ -12,7 +12,7 @@ Direct light colors and indirect shadow colors are blended *additively**, i.e. m
 Controllers 
 ---------------------------------------------------------------
 
-Four recommended order of steps 
+Four recommended steps to start with
 
 1.) Map base color
 --------------
