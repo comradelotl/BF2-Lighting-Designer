@@ -47,7 +47,7 @@ The sun will become brighter and the shadows bluer.
 Sun Position
 ------------
 Where the sun currently sits relative to the observer. At 0° it's at the horizon at dawn or dusk and gives off warm light. 
-At 90° it's directly above your head at noon and is the brightest and gives off rather white light.
+At 90° it's directly above your head at noon,  is the brightest and gives off white-ish light.
 
 Sun intensity
 ------------
