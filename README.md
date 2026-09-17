@@ -58,7 +58,7 @@ The sun is not always shining the same strength. This slider can be manually adj
 Air type
 ------------
 The type of stuff that's moving through the air and giving indirect light it's distinct color.
-Especially on Highway Tampa or Karkand you may not want a blue sky coloring your map but give the map a more dusty brown-ish look.
+Especially on Highway Tampa or Karkand you may not want a blue sky coloring your shadows but give the map a more dusty brown-ish look.
 
 ## ->  influences __Haze (turbidity)__
 
