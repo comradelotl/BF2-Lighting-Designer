@@ -5,7 +5,7 @@ that can be copy-pasted into Battlefield 2 map light settings in the sky.con fil
 
 Battlefield 2 rendering logic: 
 Color brightness adjusts light strength. Setting a light to 0/0/0 turns it off.
-Direct light colors and indirect shadow colors are blended *additively**, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
+Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
  
 
 ---------------------------------------------------------------
@@ -21,8 +21,7 @@ This is the ground reflected by the foliage shadow. The idea is that at full sun
 the foliage green. So on i.e. Karkand instead of a lush green it would make sense to pick a sand tone.
 
 	-> Influence on foliage
-	------------
-	Automatically adjusts this color influence with sun intensity. This slider can be manually adjusted.
+	Automatically adjusts the ground color influence on foliage with sun intensity. This slider can be manually adjusted.
 
 
 2.) Get Sun angle
