@@ -20,7 +20,8 @@ Four recommended steps to start with
 This is the ground reflected by the foliage shadow. The idea is that at full sunlight the ground reflects on 
 the foliage green. So on i.e. Karkand instead of a lush green it would make sense to pick a sand tone.
 
-	-> Influence on foliage
+## -> Influence on foliage
+
 	Automatically adjusts the ground color influence on foliage with sun intensity. This slider can be manually adjusted.
 
 
@@ -57,10 +58,12 @@ Air type
 The type of stuff that's moving through the air and giving indirect light it's distinct color.
 Especially on Highway Tampa or Karkand you don't want a blue sky coloring your map but give the map a more dusty brown-ish look.
 
-	- influences **Haze (turbidity)**
+## ->  influences __Haze (turbidity)__
+
 	The amount of stuff that's moving through the air. Turning it to 0 restores a blue sky.
 
-	- influences **Twilight tint (high altitude turbidity)**
+## -> influences __twilight tint (high altitude turbidity)__
+	
 	The same thing with a different effect. Why is the sky sometimes pink or red at sunset or dawn? The answer is stuff is moving 
 	through the air at high altitudes. Effect will be visible at 20° degrees or below.
 
