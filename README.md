@@ -40,7 +40,7 @@ the time of day slider to 24° at 7:36 makes the most sense.
 Very decisive effect for your map. Shifts the whole illumination from direct to indirect light and makes the light more grey. 
 Slider has to be manually set.
 
-Ground elevation:
+Ground elevation
 --------------
 The sun will become brighter and the shadows bluer. 
 
@@ -62,9 +62,9 @@ Especially on Highway Tampa or Karkand you don't want a blue sky coloring your m
 
 - influences twilight tint 
 
-Haze:
+Haze (turbidity)
 ------------
-Adjusts the amount of stuff that's moving through the air. Turning it to 0 restores a blue sky.
+The amount of stuff that's moving through the air. Turning it to 0 restores a blue sky.
 
 
 Twilight tint (high altitude turbidity) 
@@ -87,7 +87,7 @@ This is a gate that prevents the shadow from becoming too black. Because Battlef
 automatically shifts light budget from direct light to the indirect light.
 
 
-StaticMesh brightness/ Terrain brightness.
+StaticMesh brightness/ Terrain brightness
 ------------
 Manual parameters to play with. Preserves hue.
 
