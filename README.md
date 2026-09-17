@@ -5,7 +5,7 @@ that can be copy-pasted into Battlefield 2 sky.con light settings.
 
 Battlefield 2 rendering logic: 
 
-Color brightness adjusts light strength. Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white.
+RGB channel intensity represents the light intensity. Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white. The brightness can exceed 1.
 
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
 
