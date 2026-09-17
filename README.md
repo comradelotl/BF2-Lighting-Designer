@@ -33,6 +33,8 @@ the foliage green. So on i.e. Karkand instead of a lush green it would make sens
 In the sky.con the parameter Lightmanager.sunDirection XXX/YYY/ZZZ shows you a given sun direction.
 Input the YYY value into the box to receive a readable value in degrees. 
 
+Has no effect on the model but acts as a simple translator.
+
 3.) Time of day
 --------------
 Look at the sky box texture, what time of day makes here? If it's rather morning like in Dalian Plant then dialing 
