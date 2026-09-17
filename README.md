@@ -56,7 +56,7 @@ The sun is not always shining the same strength. This slider can be manually adj
 Air type
 ------------
 The type of stuff that's moving through the air and giving indirect light it's distinct color.
-Especially on Highway Tampa or Karkand you don't want a blue sky coloring your map but give the map a more dusty brown-ish look.
+Especially on Highway Tampa or Karkand you may not want a blue sky coloring your map but give the map a more dusty brown-ish look.
 
 ## ->  influences __Haze (turbidity)__
 
@@ -64,8 +64,9 @@ Especially on Highway Tampa or Karkand you don't want a blue sky coloring your m
 
 ## -> influences __twilight tint (high altitude turbidity)__
 	
-	The same thing with a different effect. Why is the sky sometimes pink or red at sunset or dawn? The answer is stuff is moving 
-	through the air at high altitudes. Effect will be visible at 20° degrees or below.
+	The same thing with a different effect. Why is the sky sometimes pink or red at sunset or dawn? 
+	The answer is stuff is moving through the air at high altitudes. 
+	Effect will be visible at 20° degrees or below.
 
 	Try out the smoke/ volcano air type at dawn or dusk to see the difference.
 	Also affects moonlight.
