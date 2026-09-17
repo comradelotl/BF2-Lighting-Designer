@@ -43,7 +43,8 @@ Slider has to be manually set.
 
 Ground elevation
 --------------
-The sun will become brighter and the shadows bluer. 
+Climbing up high makes means less atmosphere above you, so the sun becomes brighter and the shadows bluer.
+This makes for a distinct look for maps like i.e. Fushe Pass.
 
 Sun Position
 ------------
