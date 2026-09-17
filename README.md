@@ -96,15 +96,17 @@ Manual parameters to play with. Preserves hue.
 Output
 ----------------------------------------------------------------------------
 
+Material type						| Config Variable
+------------------------------------| -------------------------------------------------------------------------
 Vehicles, Weapons and Soldiers		| Lightmanager.sunColor, Lightmanager.skycolor, Lightmanager.sunSpecColor
-Terrain and cast shadows 		| terrain.sunColor, terrain.GIColor
+Terrain and cast shadows 			| terrain.sunColor, terrain.GIColor
 Buildings, objects and tree trunks 	| Lightmanager.staticSunColor, Lightmanager.staticSkyColor, Lightmanager.staticSpecularColor
 Tree foliage, shrub and grass		| Lightmanager.treeSunColor, Lightmanager.treeAmbientColor
 Smoke, fire, water effects, etc.	| Lightmanager.effectSunColor, Lightmanager.effectShadowColor
-
+------------------------------------| -------------------------------------------------------------------------
 Dummy values left for copy-pasting	| Lightmanager.ambientcolor, Lightmanager.treeSkyColor
 that are not used ingame
-
+------------------------------------| -------------------------------------------------------------------------
 Experimental, may be better hand picked	| Renderer.fogColor
 
 
