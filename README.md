@@ -19,7 +19,7 @@ Four recommended steps to start with
 1.) Map base color
 --------------
 
-This is the ground reflected by the foliage shadow. The idea is that at full sunlight the ground reflects on 
+This is the ground reflected by the foliage. The idea is that at full sunlight the ground reflects on 
 the foliage green. So on i.e. Karkand instead of a lush green it would make sense to pick a sand tone.
 
 ## -> Influence on foliage
