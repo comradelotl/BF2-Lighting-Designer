@@ -22,7 +22,8 @@ the foliage green. So on i.e. Karkand instead of a lush green it would make sens
 
 ## -> Influence on foliage
 
-	Automatically adjusts the ground color influence on foliage with sun intensity. This slider can be manually adjusted.
+	Automatically adjusts the ground color influence on foliage with sun intensity. 
+	This slider can be manually adjusted.
 
 
 2.) Get Sun angle
