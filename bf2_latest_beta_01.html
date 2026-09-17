@@ -274,7 +274,7 @@
         </div>
       </div>
       <div class="field">
-        <label>Sun position (dawn ← noon → dusk) <span class="val" id="v-elevation"></span></label>
+        <label>Sun position <span class="val" id="v-elevation"></span></label>
         <input type="range" id="sunPos" min="-60" max="240" step="1" value="90">
       </div>
       <div class="field">
@@ -955,7 +955,7 @@ function render(){
   el('v-time').textContent = formatHour(+el('timeOfDay').value);
   el('v-timeElev').textContent = (moon ? 'sun '+Math.round(elevation)+'°' : 'sun elevation '+Math.round(elevation)+'°')+' · moon '+(moon?'active':'off');
 
-  const phaseLabel = solarPhase < -0.03 ? ' dawn' : solarPhase > 0.03 ? ' dusk' : ' noon';
+  const phaseLabel = elevation <= -12 ? ' night' : solarPhase < 0 ? (elevation <= 3 ? ' dawn' : elevation >= 60 ? ' noon' : ' morning') : (elevation >= 60 ? ' noon' : elevation <= 3 ? ' dusk' : ' evening');
   el('v-elevation').textContent = Math.round(elevation)+'°'+phaseLabel;
   el('v-intensity').textContent = intensity.toFixed(2)+'x';
   el('v-haze').textContent = haze.toFixed(1);
