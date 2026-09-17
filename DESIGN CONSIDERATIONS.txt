@@ -1,0 +1,22 @@
+Battlefield 2 has a very limited lighting system so whenever I hit these limits, I had to make design decisions.
+
+I build in several mechanisms to compensate missing secondary light reflections. No bright surface would ever brighten any shadow.
+
+1. Although there is hemisphere lighting i wanted ambient hue to affect foliage under specific conditions for a more coherent scene.
+The idea is that if sunlight is strong, more ambient coloring will be reflected by the foliage. This had to be limited to foliage only because else the hand-picked hue would dominate the whole scene and would feel off.
+
+2. To keep shadows from blacking out around noon a gate shifts light budget from direct towards indirect light while preserving hue.
+You can imagine the light budget as a given amount of light that can exist in the scene and is only shifted to one side or the other.
+A sun-intensity driven gate solve this problem better than a static parameter floor.
+
+3 At late afternoon I had the problem that shadows would stay cool while the sun would get increasingly warm. 
+At these elevations I added an influencing factor, where static shadows would rise in color temperature for a limited range.
+
+4. For all terms present increasing overcast means linearly shifting direct light to indirect light. This caused the problem that statics would
+lose their definition and have an overly flat appearance. Static lighting does not differentiate between thin lamp posts and large structures.
+The solution is retaining some amount of direct light for static objects only. 
+
+6. There is a early morning-specific hue switch for direct light that I decided to introduce to suppress overly orange morning scenes. 
+For a brief amount of time terrain, bundledmesh, and statics sun light would be sky-colored blue, while I preserved the orange for the foliage sun, and specular colors.
+This looks incredibly cool without drenching the whole morning landscape in orange.
+
