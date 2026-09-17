@@ -58,8 +58,9 @@ Air type
 The type of stuff that's moving through the air and giving indirect light it's distinct color.
 Especially on Highway Tampa or Karkand you don't want a blue sky coloring your map but give the map a more dusty brown-ish look.
 
---- > influences haze
---- > influences twilight tint 
+- influences haze
+
+- influences twilight tint 
 
 Haze:
 ------------
