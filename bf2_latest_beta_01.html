@@ -319,7 +319,7 @@
         <summary>Advanced</summary>
         <div class="field">
           <label>Shadow compensator (auto) <span class="val" id="v-giBounce"></span></label>
-          <input type="range" id="giBounce" min="0" max="0.1" step="0.001" value="0.1">
+          <input type="range" id="giBounce" min="0" max="0.2" step="0.001" value="0.1">
         </div>
         <div class="field">
           <label>StaticMesh brightness <span class="val" id="v-staticI"></span></label>
@@ -664,6 +664,12 @@ const DAY_CYCLE = [
   {h:21.5, intensity:0.17, haze:1.9},
   {h:23,   intensity:0.18, haze:2.0},
 ];
+// Reference pool size for the whole model: the largest budget the day-cycle itself produces.
+// This is the "noon = reference" grounding anchor — the intensity lever and the atmosphere can
+// reach up to it but never invent brightness above it (the budget just saturates), and only the
+// altitude path (Beer-Lambert, see elevationSunBoost) can exceed it. Tracking the day-cycle
+// means editing any keyframe's intensity re-anchors the cap automatically.
+const REF_DAY_POOL = Math.max.apply(null, DAY_CYCLE.map(k => k.intensity));
 // No season/latitude input exists, so "hour" can't reflect real sunrise/sunset drift —
 // it assumes a fixed 12h equinox day (sunrise 6:00, sunset 18:00), stated explicitly in
 // the UI label rather than left as an implicit, unstated assumption.
@@ -1025,13 +1031,15 @@ function render(){
   // One shared pool that atmospheric factors only *redistribute*, never add to independently.
   // Overcast is the only thing allowed to shrink the pool itself (thick cloud genuinely blocks
   // some total irradiance, per spec); haze only shifts the split, never the pool size.
-  // 1.25 light budget binds only below the horizon — Step 0 applied it globally, which
-// dimmed daytime (noon default intensity 1.45 got capped). Above 0° the budget must stay
-// exactly as it was (sunIntensity * overcast shrink, uncapped) per the no-above-0° rule;
-// below the horizon the economy cap applies and reserves the headroom the moon draws on.
-const totalBudget = elevation <= 0
-  ? Math.min(1.25, sunIntensity * lerp1(1, 0.85, overcast))
-  : sunIntensity * lerp1(1, 0.85, overcast);
+  // Grounding anchor: the pool is bounded above by REF_DAY_POOL (the tuned noon budget). The
+  // intensity lever — manual or day-cycle — can reach up to the reference, and above it the
+  // pool saturates for sun and sky TOGETHER, so it can't invent HDR and the sun:sky ratio is
+  // preserved. Only altitude, a real atmospheric path reduction, is allowed past the reference.
+  // Below the horizon the tighter 1.25 economy cap applies instead and reserves the headroom
+  // the moon draws on.
+  const totalBudget = elevation <= 0
+    ? Math.min(1.25, sunIntensity * lerp1(1, 0.85, overcast))
+    : Math.min(REF_DAY_POOL, sunIntensity * lerp1(1, 0.85, overcast));
 
   // Sky family draws on the common-sky-budget envelope (see SKY_SHARE_KEYFRAMES) as its design
   // intent, but the REALIZED share is hard-capped by the physical budget: the sun draws
@@ -1132,7 +1140,7 @@ const totalBudget = elevation <= 0
   // over once dayFactor*skyDarkCurve is genuinely near zero (deep twilight/night).
   const NIGHT_SKY_FLOOR = [0.035, 0.05, 0.09];
 
-  let sunColor            = scaleToFit(mul(sunHue, effSunFunded)); // sun's own draw on the same light budget as skycolor — scaleToFit (hue-preserving, only scales down on overshoot) mirrors exactly how ambientBase/skyBrightness get normalized for skycolor below, so sun and sky stay on equal budget footing instead of sun alone being left uncapped; the sun is drawn at effSunFunded (post-bounce) so the bounce it funded is exactly what shadows gain — the pool is conserved
+  let sunColor            = mul(sunHue, effSunFunded); // sun's own draw on the same light budget as skycolor — uncapped (HDR headroom, same scope as elevationSunBoost) so the sun scales linearly with intensity exactly like the shadow family and the output keeps the sun:sky ratio; drawn at effSunFunded (post-bounce) so the bounce it funded is exactly what shadows gain — the pool is conserved
   const skyBrightness       = ambientBase + bounceBudget; // sky's cut of the unified budget, PLUS the sun-funded stale terrain bounce it inherited (see bounce block above) — on the same footing as sunColor: the sun's magnitude is budget * sunDirectShare * subHorizonFactor with NO opticalDepth multiplier, so the sky's must be budget * skyShare directly — the old `*skyDarkCurve` was asymmetric extinction on one side of the same pool. OD still shapes the sky family below via the per-family floors (all scaled by skyDarkCurve) and effectShadowColor. Because the bounce was carved out of effIntensity BEFORE any sun term was computed, the pool identity sun+sky==totalBudget still holds exactly at every preset and overcast level.
   // skycolor, staticSkyColor and treeAmbientColor are the "shadow terms" for geometric
   // objects — all three now share this one curve (skyBrightness = ambientBase + bounceBudget)
@@ -1158,7 +1166,7 @@ const totalBudget = elevation <= 0
   let skycolor           = mul(clamp01(mul(lerp(scaleToFit(mul(C, skyHueBase)), NIGHT_SKY_FLOOR, skyFloorWeight), skyBounceGain)), skyAtten);
   let ambientcolor       = mul(scaleToFit(lerp(mul([1,1,1],ambientMag), mul(groundAlbedoAtm,ambientMag), effGroundBlend)), skyAtten);
   let sunSpecColor       = clamp01(mul(sunHue, Math.min(1, effSunFunded)));
-  let terrainSunColor      = scaleToFit(mul(sunHue, effSunFunded * terrainB)); // terrainB is a boost multiplier on the actual direct-light budget, not a substitute for it — dividing by intensity here previously cancelled the intensity dependence entirely
+  let terrainSunColor      = mul(sunHue, effSunFunded * terrainB); // terrainB is a boost multiplier on the actual direct-light budget, not a substitute for it — dividing by intensity here previously cancelled the intensity dependence entirely
   let terrainSkyColor    = mul(clamp01(mul(desat(C,0.25), 0.86*skyBrightness)), skyAtten);
   const waterSunIntensity  = Math.min(0.9, effSunFunded*0.25);
   // Static-family budget divergence under cloud: the global redirect (0.85) drenches EVERY
@@ -1183,7 +1191,7 @@ const totalBudget = elevation <= 0
   const staticSkyRedirectEff = lerp1(1, 0.6865, overcast);
   const staticSunFunded  = totalBudget * sunDirectShare(elevation) * staticCloudAtten * subHorizonFactor(elevation) - bounceBudget;
   const staticSkyBright  = totalBudget * (skyShare + (1-skyShare)*(1-staticCloudAtten)*staticSkyRedirectEff) + bounceBudget;
-  let staticSunColor       = clamp01(mul(sunHue, staticI*Math.min(1,staticSunFunded)));
+  let staticSunColor       = mul(sunHue, staticI*staticSunFunded);
   let staticSpecularColor= clamp01(mul(sunHue, Math.min(1, staticI*1.2) * Math.min(1,effSunFunded))); // specular is a direct/coherent-light phenomenon — must attenuate with cloud cover like sunSpecColor on the GLOBAL curve (only the baked-diffuse staticSunColor uses the shallower static-specific redirect); specular is a live spec highlight, not baked geometry, so it rides the same cloud attenuation as the rest of the direct family
   // staticSkyColor feeds baked/static (LDR) lighting, not a live-rendered value like skycolor
   // — it formerly carried the largest artificial floor of the shadow family because baked
@@ -1231,7 +1239,7 @@ const totalBudget = elevation <= 0
   // assumption baked in.
   // treeSunColor computed here (ahead of treeAmbientColor) so its own brightness can gate
   // how much ground-albedo bounce reaches the canopy below.
-  let treeSunColor         = desat(clamp01(mul(sunHue, Math.min(1, effSunFunded))), duskDesatW*0.6 + dawnDesatW*0.6); // budget-correct sun magnitude, independent of staticI — baked/LDR intensity slider affects statics only, never foliage
+  let treeSunColor         = desat(mul(sunHue, effSunFunded), duskDesatW*0.6 + dawnDesatW*0.6); // budget-correct sun magnitude, independent of staticI — baked/LDR intensity slider affects statics only, never foliage
   // Ground bounce onto foliage requires sunlit ground to bounce off in the first place — a
   // linear scale on effGroundBlend by the sun's own brightness, same pattern as haze: a
   // manually-set/default slider value that's then scaled down by what's actually happening
@@ -1265,15 +1273,22 @@ const totalBudget = elevation <= 0
 
   // Elevation overbright — thinner air at altitude means less atmospheric extinction of the
   // direct beam by the time it reaches the ground, so the sun can genuinely read brighter
-  // than a sea-level noon even at the same intensity/haze setting. Applied as the absolute
-  // final step, after every internal consumer of these four colors has already run —
+  // than a sea-level noon even at the same intensity/haze setting. Grounded in Beer-Lambert:
+  // direct irradiance I = I0*exp(-tau*AM), AM = relative airmass ~ 1/sin(elev), and altitude
+  // cuts the atmospheric path by up to ~40% at 4000 m — so the altitude ratio over sea level
+  // is exp(0.4*tau*altitudeFactor). tau is pinned to the confirmed in-engine ceiling:
+  // exp(0.4*tau) = 1.2 at maximum altitude -> tau = ln(1.2)/0.4 ~ 0.46, a realistic clear-sky
+  // vertical optical depth. pow(1.2, altitudeFactor) is therefore the exponential Beer-Lambert
+  // shape with exactly the 1.0 -> 1.2 endpoints the old tuned lerp had — the tuned ramp
+  // replaced by the physics that motivated it. Applied as the absolute final step, after every
+  // internal consumer of these four colors has already run —
   // lastSunColor (ground-blend auto-tracking), the dawn-swap hueSwap magnitudes, terrainBounceHue,
   // and treeGroundBlend all read the pre-boost values above, so this multiplier only ever
   // inflates what gets exported, never anything computed off of these colors. A flat per-
   // channel scale on an already-normalized/clamped color preserves hue exactly (same logic
   // as scaleToFit, just uphill instead of down). Confirmed in-engine HDR headroom above 1.0
   // exists for these four cvars — scope stays limited to them; specular terms excluded.
-  const elevationSunBoost = lerp1(1, 1.2, altitudeFactor);
+  const elevationSunBoost = Math.pow(1.2, altitudeFactor);
   sunColor        = mul(sunColor, elevationSunBoost);
   terrainSunColor = mul(terrainSunColor, elevationSunBoost);
   staticSunColor  = mul(staticSunColor, elevationSunBoost);
@@ -1568,5 +1583,6 @@ el('copyBtn').addEventListener('click', ()=>{
 
 renderWithGroundSync();
 </script>
+
 </body>
 </html>
