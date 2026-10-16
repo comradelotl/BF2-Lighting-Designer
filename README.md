@@ -8,6 +8,7 @@ For day time this is actually a physics engine in disguise.
 Read technical notes below.
 
 Bug report: contact me via ModDB or Discord
+Contains 45 skybox textures, hence the ~10 MB
 
 First steps:
 ---------------
