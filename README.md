@@ -34,7 +34,7 @@ Battlefield 2 rendering logic:
 ---------------
 
 RGB channel intensity represents the light intensity. 
-Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white. The brightness can exceed 1.
+Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white. The brightness can exceed 1 because BF2 rendering accepts HDR.
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
 Effects are the odd exception to this. Tuning effectsSun 0/0/0 turns them black.
 
@@ -103,7 +103,7 @@ Output brightness control.
 Can for example be used to brighten shadows of a snowy scenes
 
 
-Advanded: Shadow compensator (auto) 
+Advanced: Shadow compensator (auto) 
 ------------
 This is a gate that prevents the shadows from blacking out. Because Battlefield 2 has no secondary reflections this parameter 
 automatically shifts an amount of light  from direct light to the indirect light.
