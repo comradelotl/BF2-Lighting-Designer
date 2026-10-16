@@ -198,7 +198,7 @@ The output display is just severely compressed to simple RGB triplets for BF2. S
 
 The rough model pipeline construction is:
 
-1.) Input: physics calculation layer for deriving sun beam, sky dome, turbidity and fog values.
+1.) Input: physics calculation layer for deriving sun beam, sky dome, turbidity (CAMS aerosol properties) and fog values.
 
 2.) a light budget distribution system for the direct/ diffuse relation according to ASHRAE & Perez, etc. 
 The different color spaces allow me to completely control the amount of light
