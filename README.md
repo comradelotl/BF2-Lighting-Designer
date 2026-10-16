@@ -33,7 +33,7 @@ Battlefield 2 rendering logic:
 RGB channel intensity represents the light intensity. 
 Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white. The brightness can exceed 1.
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
-Exception: effects are the odd exception to this. Tuning effectsSun 0/0/0 turns them black.
+Effects are the odd exception to this. Tuning effectsSun 0/0/0 turns them black.
 
 ------------------------------
 Lighting Designer Controllers 
@@ -43,7 +43,7 @@ Lighting Designer Controllers
 1.) Foliage Ambient Color 
 --------------
 Give foliage a custom tint around noon.
-Foliage has always it's green enhanced regardless.
+Foliage will always stay green regardless.
 This is mainly for giving the option to create some visual coherency. 
 
 
