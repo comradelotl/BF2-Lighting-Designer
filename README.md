@@ -203,7 +203,7 @@ The rough model pipeline construction is:
 2.) a light budget distribution system for the direct/ diffuse relation according to ASHRAE & Perez, etc. 
 The different color spaces allow me to completely control the amount of light
 
-3.) Material_response: All different colors emitted by sun beam and sky dome are put through color filters to give statics, dynamic objects, terrain and especially foliage their specific identity and not simple passive reflectors.
+3.) Material_response: All different colors emitted by sun beam and sky dome are put through color filters to give statics, dynamic objects, terrain and especially foliage their specific identity and not have them be simple passive reflectors.
 
 4.) Output: lightness adjustments for game design purposes.
 
