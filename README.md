@@ -1,16 +1,17 @@
 ![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen249.png)
 
 ![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen254.png)
+
 The Lighting Designer provides an interface for auto-generating naturalistic RGB color palettes.
 
 The Fog & Water Designer provides visual reference for more intentional color design.
 
-For day time this is actually a physics engine in disguise. 
-Read technical notes below.
+For daytime this is actually a physics engine in disguise. It's not simply outputting calculated sun beam and sky dome colors, but all four types of mesh are given their own kind of filter to model material surface response to light. Read the technical notes below.
 
 Bug report: contact me via ModDB or Discord
 
 Contains 45 skybox textures, hence the ~10 MB
+
 
 First steps:
 ---------------
@@ -203,6 +204,11 @@ The rough model pipeline construction is:
 3.) Material_response: mixing pult for weighing raw beam/dome color and material identity.
 
 4.) Output: lightness adjustments for game design purposes.
+
+Rendering quirks:
+I have discovered that lighting all four types of mesh the same amount of light leaves statics overexposed, which is a funny quirk.
+So what one may perceive in the staticSunColor as rather dim is the fair share that makes directly lit
+static surfaces an appropriately balanced look. 
 
 
 
