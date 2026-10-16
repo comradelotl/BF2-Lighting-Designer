@@ -6,7 +6,7 @@ The Lighting Designer provides an interface for auto-generating naturalistic RGB
 
 The Fog & Water Designer provides visual reference for more intentional color design.
 
-For daytime this is actually a physics engine in disguise. It's not simply outputting calculated sun beam and sky dome colors, but all four types of mesh are given their own kind of filter to model material surface response to light. Read the technical notes below.
+For daytime this is actually a physics engine in disguise. It's not simply calculating sun beam and sky dome colors, but all four types of mesh are given their own kind of filter to model material surface response to light. Read the technical notes below.
 
 Bug report: contact me via ModDB or Discord
 
@@ -191,24 +191,27 @@ Technical notes:
 ----------------
 
 All daytime color values are calculated using atmospheric physics.
-I only chose the color palette for twilight and night.
+I merely authored the color palettes for twilight and night.
 
-Colors are calculated using XYZ and OKLCh color spaces. The output display is in RGB.
+Colors are calculated and processed using XYZ and OKLCh color spaces. Color spaces are assigned specific tasks to achieve specific goals. 
+The output display is just severely compressed to simple RGB triplets for BF2. So this model could easily be adapted to other types of game engines. 
 
 The rough model pipeline construction is:
 
-1.) Input: physics calculation layer for deriving sun beam, sky dome, haze and fogginess values.
+1.) Input: physics calculation layer for deriving sun beam, sky dome, turbidity and fog values.
 
-2.) light budget distribution for the direct/ diffuse relation according to ASHRAE & Perez, etc.
+2.) a light budget distribution system for the direct/ diffuse relation according to ASHRAE & Perez, etc. 
+The different color spaces allow me to completely control the amount of light
 
-3.) Material_response: mixing pult for weighing raw beam/dome color and material identity.
+3.) Material_response: All different colors emitted by sun beam and sky dome are put through color filters to give statics, dynamic objects, terrain and especially foliage their specific identity and not simple passive reflectors.
 
 4.) Output: lightness adjustments for game design purposes.
 
-Rendering quirks:
-I have discovered that lighting all four types of mesh the same amount of light leaves statics overexposed, which is a funny quirk.
-So what one may perceive in the staticSunColor as rather dim is the fair share that makes directly lit
+Rendering quirk:
+I have discovered that lighting all four types of mesh the same amount of light leaves statics overexposed.
+So what one may perceive in the staticSunColor as rather dim is the fair share that gives directly lit
 static surfaces an appropriately balanced look. 
+
 
 
 
