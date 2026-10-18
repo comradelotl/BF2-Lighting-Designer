@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RGB → LCH (HDR)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#1b1b1f; color:#eee; margin:0; padding:24px; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  input, select { font-size:15px; padding:8px 10px; background:#2a2a30; color:#eee; border:1px solid #444; border-radius:6px; }
+  #in { width:240px; }
+  #out { margin-top:16px; font-family: ui-monospace, monospace; font-size:15px; line-height:1.7; }
+  .k { color:#9aa; display:inline-block; width:74px; }
+  #swatch { width:120px; height:120px; margin-top:16px; border:1px solid #444; border-radius:8px; }
+  small { color:#888; }
+  label { color:#9aa; font-size:13px; }
+</style>
+</head>
+<body>
+<h3>RGB → LCH <small>(SDR + HDR)</small></h3>
+<div class="row">
+  <input id="in" placeholder="R/G/B e.g. 0.5/0.2/0.9" autocomplete="off" spellcheck="false">
+</div>
+<div class="row">
+  <span><label>Transfer</label> <select id="tf">
+    <option value="srgb">sRGB</option>
+    <option value="linear">Linear</option>
+    <option value="pq">PQ (ST 2084)</option>
+    <option value="hlg">HLG</option>
+  </select></span>
+  <span><label>Primaries</label> <select id="pr">
+    <option value="auto">Auto</option>
+    <option value="709">Rec.709</option>
+    <option value="2020">Rec.2020</option>
+  </select></span>
+</div>
+<div id="out"></div>
+<div id="swatch"></div>
+<p><small>R/G/B as 0–1, 0–255, or extended (&gt;1) linear. PQ/HLG use 203&nbsp;cd/m² grey as white reference (HLG peak 1000 nits). CIE LCh (ab), D65. Swatch is tone-clipped for an SDR screen.</small></p>
+
+<script>
+const srgb2lin = c => c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+const lin2srgb = c => c <= 0.0031308 ? c*12.92 : 1.055*Math.pow(c, 1/2.4) - 0.055;
+const clamp01 = c => c < 0 ? 0 : c > 1 ? 1 : c;
+
+function pqEOTF(E) {
+  E = clamp01(E);
+  const m1 = 0.1593017578125, m2 = 78.84375;
+  const c1 = 0.8359375, c2 = 18.8515625, c3 = 18.6875;
+  const Ep = Math.pow(E, 1/m2);
+  return 10000 * Math.pow(Math.max(Ep - c1, 0) / (c2 - c3*Ep), 1/m1);
+}
+function hlgInvOetf(E) {
+  E = clamp01(E);
+  const a = 0.17883277, b = 0.28466892, c = 0.55991073;
+  return E <= 0.5 ? E*E/3 : (Math.exp((E-c)/a) + b)/12;
+}
+
+const M709  = [0.4124564,0.3575761,0.1804375, 0.2126729,0.7151522,0.0721750, 0.0193339,0.1191920,0.9503041];
+const M2020 = [0.6369580,0.1446169,0.1688809, 0.2627002,0.6779981,0.0593017, 0.0000000,0.0280727,1.0609851];
+const WHITE = 203;
+
+function toLinearRel(rgb, tf) {
+  let [r, g, b] = rgb;
+  if (tf === 'srgb')   return [srgb2lin(Math.max(0,r)), srgb2lin(Math.max(0,g)), srgb2lin(Math.max(0,b))];
+  if (tf === 'linear') return [r, g, b];
+  if (tf === 'pq')     return [pqEOTF(r)/WHITE, pqEOTF(g)/WHITE, pqEOTF(b)/WHITE];
+  // HLG: inverse OETF -> scene linear, then OOTF (gamma 1.2, peak 1000 nits)
+  const rs = hlgInvOetf(r), gs = hlgInvOetf(g), bs = hlgInvOetf(b);
+  const Ys = 0.2627*rs + 0.6780*gs + 0.0593*bs;
+  const sc = 1000 * Math.pow(Math.max(Ys, 1e-9), 0.2) / WHITE;
+  return [rs*sc, gs*sc, bs*sc];
+}
+
+function linToLch(lr, lg, lb, primaries) {
+  const M = primaries === '2020' ? M2020 : M709;
+  let X = M[0]*lr + M[1]*lg + M[2]*lb;
+  let Y = M[3]*lr + M[4]*lg + M[5]*lb;
+  let Z = M[6]*lr + M[7]*lg + M[8]*lb;
+  X /= 0.95047; Z /= 1.08883;
+  const f = t => t > 0.008856 ? Math.cbrt(t) : (7.787*t + 16/116);
+  const fx = f(X), fy = f(Y), fz = f(Z);
+  const L = 116*fy - 16, A = 500*(fx-fy), B = 200*(fy-fz);
+  const C = Math.hypot(A, B);
+  let H = Math.atan2(B, A) * 180/Math.PI;
+  if (H < 0) H += 360;
+  return { L, C, H, Y };
+}
+
+const inp = document.getElementById('in');
+const tfSel = document.getElementById('tf');
+const prSel = document.getElementById('pr');
+const out = document.getElementById('out');
+const sw  = document.getElementById('swatch');
+
+function run() {
+  const parts = inp.value.split(/[\/,;\s]+/).filter(s => s !== '').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) { out.textContent = ''; sw.style.background = 'transparent'; return; }
+  const tf = tfSel.value;
+  const isHdr = tf === 'pq' || tf === 'hlg';
+  const primaries = prSel.value === 'auto' ? (isHdr ? '2020' : '709') : prSel.value;
+
+  let [r, g, b] = parts;
+  const mx = Math.max(r, g, b);
+  const allInts = parts.every(v => Number.isInteger(v));
+  // 8-bit codes are integers >1; anything else above 1 is treated as extended range.
+  const scale = (mx > 1.0001 && allInts) ? 1/255 : 1;
+
+  const lin = toLinearRel([r*scale, g*scale, b*scale], tf);
+  const { L, C, H, Y } = linToLch(lin[0], lin[1], lin[2], primaries);
+  const peakNits = Math.max(...lin) * WHITE;
+
+  const swE = v => Math.round(255*clamp01(lin2srgb(clamp01(v))));
+  sw.style.background = `rgb(${swE(lin[0])},${swE(lin[1])},${swE(lin[2])})`;
+
+  out.innerHTML =
+    `<div><span class="k">L*</span>${L.toFixed(2)}</div>` +
+    `<div><span class="k">C*</span>${C.toFixed(2)}</div>` +
+    `<div><span class="k">H</span>${H.toFixed(2)}°</div>` +
+    `<div><span class="k">primaries</span>Rec.${primaries} · ${tf.toUpperCase()}</div>` +
+    (isHdr ? `<div><span class="k">peak</span>${peakNits.toFixed(1)} cd/m²</div>` : '');
+}
+
+[inp, tfSel, prSel].forEach(el => el.addEventListener('input', run));
+inp.focus();
+</script>
+</body>
+</html>
