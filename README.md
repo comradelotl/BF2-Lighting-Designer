@@ -2,6 +2,11 @@
 
 ![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen254.png)
 
+10/20/26
+Update incoming soon
+
+--------------
+
 The Lighting Designer provides an interface for auto-generating naturalistic RGB color palettes.
 
 The Fog & Water Designer provides visual reference for more intentional color design.
@@ -218,5 +223,14 @@ static surfaces an appropriately balanced look.
 
 ------------------
 
-Created with Claude / OpenCode
+Arranged with Claude / OpenCode
 
+sources: 
+
+https://github.com/elliahu/atmosphere // major source for all sorts of atmospheric physics
+
+https://github.com/colour-science/MunsellAndKubelkaMunkToolbox // static and terrain material filter
+
+https://merl.com/research/downloads/BRDF // dynamic objects material filter
+
+https://github.com/CriticalAssetManagement // aerosol properties
