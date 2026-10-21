@@ -223,14 +223,20 @@ static surfaces an appropriately balanced look.
 
 ------------------
 
-Arranged with Claude / OpenCode
+Sources: 
 
-sources: 
+Atmospheric physics:
+https://github.com/elliahu/atmosphere 
+https://ebruneton.github.io/precomputed_atmospheric_scattering/
 
-https://github.com/elliahu/atmosphere // major source for all sorts of atmospheric physics
+Material filtering
+https://github.com/colour-science/MunsellAndKubelkaMunkToolbox 
+https://merl.com/research/downloads/BRDF 
 
-https://github.com/colour-science/MunsellAndKubelkaMunkToolbox // static and terrain material filter
+Aerosols:
+https://github.com/cosmoscout/cosmoscout-vr-clouds/tree/main/plugins/csp-atmospheres
+https://github.com/CriticalAssetManagement 
 
-https://merl.com/research/downloads/BRDF // dynamic objects material filter
+---------
 
-https://github.com/CriticalAssetManagement // aerosol properties
+Arranged with Claude & OpenCode
