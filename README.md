@@ -3,7 +3,7 @@
 ![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen254.png)
 
 10/20/26
-Update incoming soon
+Old version deleted, update incoming soon
 
 --------------
 
