@@ -3,6 +3,7 @@
 ![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen254.png)
 
 10/20/26
+
 update coming soon
 
 ![alt text](https://t3.ftcdn.net/jpg/00/51/45/62/240_F_51456278_3y8SC99iozvWZZXfUdtJ21TlJaqgQHWK.jpg)
@@ -23,7 +24,7 @@ Contains 45 skybox textures, hence the ~10 MB
 First steps:
 ---------------
 
-Download the latest .html and open it in your browser.
+Visit [BF2 Lighting Designer](https://comradelotl.github.io/BF2-Lighting-Designer/) or download the latest .html and open it in your browser.
 
 For Battlefield 2: drop the levels/[name]/server.zip and start dialing. The html will read out your sky.con automatically. 
 
