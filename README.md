@@ -104,11 +104,12 @@ Two options.
 		Direct light stays saturated while being reduced.
 
 6.) Material reflectance
+--------------
 My model has inbuilt material filters for the different types of mesh. 
 Disabeling it unlocks the direct raw sun beam and sky dome. This gives a more washed out look for the scene.
 
 
-6.) Brightness adjustment
+7.) Brightness adjustment
 --------------
 Output brightness control. 
 
