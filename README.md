@@ -5,6 +5,8 @@
 10/20/26
 Old version deleted, update incoming soon
 
+![alt text](https://t3.ftcdn.net/jpg/00/51/45/62/240_F_51456278_3y8SC99iozvWZZXfUdtJ21TlJaqgQHWK.jpg)
+
 --------------
 
 The Lighting Designer provides an interface for auto-generating naturalistic RGB color palettes.
@@ -100,7 +102,11 @@ Two options.
 
 		Cloud coverage measured in okta. Overcast gives the scene a slightly blue tint. 
 		Direct light stays saturated while being reduced.
-		
+
+6.) Material reflectance
+My model has inbuilt material filters for the different types of mesh. 
+Disabeling it unlocks the direct raw sun beam and sky dome. This gives a more washed out look for the scene.
+
 
 6.) Brightness adjustment
 --------------
@@ -118,7 +124,7 @@ treeAmbientColor is excluded from this.
 
 
 ----------------------------------------------------------------------------
-Output. 0-1 RGB
+Output. 0-1 RGB (HDR)
 ----------------------------------------------------------------------------
 
 All four main Mesh types have a filter applied to give them a stable identity under shifting lighting conditions.
