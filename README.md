@@ -226,15 +226,21 @@ static surfaces an appropriately balanced look.
 Sources: 
 
 Atmospheric physics:
+
 https://github.com/elliahu/atmosphere 
+
 https://ebruneton.github.io/precomputed_atmospheric_scattering/
 
 Material filtering
-https://github.com/colour-science/MunsellAndKubelkaMunkToolbox 
+
+https://github.com/colour-science/MunsellAndKubelkaMunkToolbox
+
 https://merl.com/research/downloads/BRDF 
 
 Aerosols:
+
 https://github.com/cosmoscout/cosmoscout-vr-clouds/tree/main/plugins/csp-atmospheres
+
 https://github.com/CriticalAssetManagement 
 
 ---------
