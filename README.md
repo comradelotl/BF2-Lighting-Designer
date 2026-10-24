@@ -48,7 +48,7 @@ Direct light colors and indirect shadow colors are blended *additively*, i.e. mi
 Effects are the odd exception to this. Tuning effectsSun 0/0/0 turns them black.
 
 terrainGI is always mixed in with terrainSun. This is significant because you can't simply use terrainSun to determine ingame terrain color. 
-Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively. 
+Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively, except for cast shadows.
 
 This model purposefully assigns staticSunColor a dimmer color. I have discovered that giving staticSun an equal share leaves 
 directly lit static surfaces overexposed.
