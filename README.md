@@ -39,13 +39,19 @@ selects the sky texture from the archive and
 enters the sun angle value
 
 
-Battlefield 2 rendering logic: 
+Battlefield 2 rendering logic and quirks: 
 ---------------
 
 RGB channel intensity represents the light intensity. 
 Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white. The brightness can exceed 1 because BF2 rendering accepts HDR.
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
 Effects are the odd exception to this. Tuning effectsSun 0/0/0 turns them black.
+
+terrainGI is always mixed in with terrainSun. This is significant because you can't simply use terrainSun to determine ingame terrain color. 
+Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively. 
+
+This model purposefully assigns staticSunColor a dimmer color. I have discovered that giving staticSun an equal share leaves 
+directly lit static surfaces overexposed.
 
 ------------------------------
 Lighting Designer Controllers 
@@ -104,18 +110,18 @@ Two options.
 		Cloud coverage measured in okta. Overcast gives the scene a slightly blue tint. 
 		Direct light stays saturated while being reduced.
 
-6.) Material reflectance
+6.) Mesh-specific filters
 --------------
-My model has inbuilt material filters for the different types of mesh. 
-Disabeling it unlocks the direct raw sun beam and sky dome. This gives a more washed out look for the scene.
+My model has inbuilt color filters for the different types of mesh. 
+Unchecking unlocks the direct raw sun beam and sky dome.
+As an effect the whole scene gets a washed-out look.
 
-
-7.) Brightness adjustment
+7.) Post processing
 --------------
-Output brightness control. 
+Artistic controls for brightness, color temperature and colorfulness. Alters the whole output. 
+This allows you to deliberately diverge from the naturalistic default.
 
-Can for example be used to brighten shadows of a snowy scenes
-
+Can for example be used to brighten shadows of a snowy scenes, impose a blue tint or desaturate the whole scene.
 
 Advanced: Shadow compensator (auto) 
 ------------
@@ -219,14 +225,6 @@ The different color spaces allow me to completely control the amount of light
 3.) Material_response: All different colors emitted by sun beam and sky dome are put through color filters to give statics, dynamic objects, terrain and especially foliage their specific identity and not have them be simple passive reflectors.
 
 4.) Output: lightness adjustments for game design purposes.
-
-Rendering quirk:
-I have discovered that lighting all four types of mesh the same amount of light leaves statics overexposed.
-So what one may perceive in the staticSunColor as rather dim is the fair share that gives directly lit
-static surfaces an appropriately balanced look. 
-
-
-
 
 
 ------------------
