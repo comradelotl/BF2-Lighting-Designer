@@ -2,13 +2,9 @@
 
 ![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen254.png)
 
-10/20/26
+25/10/26 v02 update
 
-update coming soon
-
-![alt text](https://t3.ftcdn.net/jpg/00/51/45/62/240_F_51456278_3y8SC99iozvWZZXfUdtJ21TlJaqgQHWK.jpg)
-
---------------
+------
 
 The Lighting Designer provides an interface for auto-generating naturalistic RGB color palettes.
 
