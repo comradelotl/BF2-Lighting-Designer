@@ -47,14 +47,30 @@ Setting a light to 0/0/0 turns it off, 1/1/1 is perfect white. The brightness ca
 Direct light colors and indirect shadow colors are blended *additively*, i.e. mixing RGB 1/0/0 and 0/1/0 will create yellow.
 Effects are the odd exception to this. Tuning effectsSun 0/0/0 turns them black.
 
-terrainGI is always mixed in with terrainSun. This is significant because you can't simply use terrainSun to determine ingame terrain color. 
-Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively, except for cast shadows.
+terrainGI is always mixed in with terrainSun except for cast shadows. 
+This is significant because you can't simply use terrainSun to determine ingame terrain color. 
+Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively.
 
 This model purposefully assigns staticSunColor a dimmer color. I have discovered that giving staticSun an equal share leaves 
 directly lit static surfaces overexposed.
 
-------------------------------
-Lighting Designer Controllers 
+
+Preview mode
+--------------------
+
+on: alpha-blends preview swatches with a slate grey reference background. 0/0/0 equals zero light
+
+off: raw RGB colors. 
+
+Mesh specific filters
+--------------------
+
+on: all four main object classes have an unique filter added
+
+off: raw sunlight and dome light
+
+
+Side panel controllers 
 ------------------------------
 
 
@@ -110,12 +126,6 @@ Two options.
 		Cloud coverage measured in okta. Overcast gives the scene a slightly blue tint. 
 		Direct light stays saturated while being reduced.
 
-6.) Mesh-specific filters
---------------
-My model has inbuilt color filters for the different types of mesh. 
-Unchecking unlocks the direct raw sun beam and sky dome.
-As an effect the whole scene gets a washed-out look.
-
 7.) Post processing
 --------------
 Artistic controls for brightness, color temperature and colorfulness. Alters the whole output. 
@@ -135,8 +145,6 @@ treeAmbientColor is excluded from this.
 Output. 0-1 RGB (HDR)
 ----------------------------------------------------------------------------
 
-All four main Mesh types have a filter applied to give them a stable identity under shifting lighting conditions.
-So i.e. buildings under diffuse light don't go completely blue.
 
 Note: StaticSunColor is intentionally given a reduced brightness, that's there to compensate a Battlefield 2 engine quirk.
 
