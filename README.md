@@ -1,8 +1,6 @@
-![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen249.png)
+![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen280.png)
 
-![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen254.png)
-
-25/10/26 v02 update
+10/25/26 v02 update
 
 ------
 
