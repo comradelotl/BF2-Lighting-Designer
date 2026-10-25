@@ -65,7 +65,7 @@ off: raw RGB colors.
 Mesh specific filters
 --------------------
 
-on: all four main object classes have an unique filter added
+on: all four material types (see output below) have an unique filter added
 
 off: raw sunlight and dome light
 
