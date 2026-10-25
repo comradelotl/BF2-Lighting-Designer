@@ -1,0 +1,19 @@
+Base model changes
+- Fixed overly-blue diffuse light
+- Overcast does not make Lightmanager.treeAmbientColor teal anymore
+- Overcast desaturating properly instead of saturating
+- Lightmanager.sunSpecColor clipping fix. It's not HDR capable and must not exceed 1/1/1.
+
+UI changes:
+- added preview-mode toggle, using the alpha channel so that 0/0/0 equals zero light
+- direct/diffuse siblings now sit next to each other
+- Toggle for disabling per-mesh filters
+- post processing controls for brightness, colorfulness, and color temperature
+
+------------------
+Technical changes
+- blue fix: Harmonization with Bruneton and Elias repos gives more accurate dome calculations
+- purged linear sRGB from the pipeline as transmission colorspace and replaced with XYZ proper. 
+- peak-fitted Lightmanager.sunSpecColor.
+- replaced static haze LUT with live rendering of aerosol effects.
+- aerosol properties are now consistently OPAC data
