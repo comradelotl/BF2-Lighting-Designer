@@ -121,6 +121,17 @@ Two options.
 		Cloud coverage measured in okta. Overcast gives the scene a slightly blue tint. 
 		Direct light stays saturated while being reduced.
 
+Visual example for thin cloud overcast at 0, 2, 4, 6, 7, and 8.
+<p align="center">
+  <img src="images/screen284_oc01.png" width="32%" alt="thin OC 0/8">
+  <img src="images/screen284_oc02.png" width="32%" alt="thin OC 2/8">
+  <img src="images/screen284_oc04.png" width="32%" alt="thin OC 4/8">
+  <br>
+  <img src="images/screen284_oc06.png" width="32%" alt="thin OC 6/8">
+  <img src="images/screen284_oc07.png" width="32%" alt="thin OC 7/8">
+  <img src="images/screen284_oc08.png" width="32%" alt="thin OC 8/8">
+</p>
+
 7.) Post processing
 --------------
 Artistic controls for brightness, color temperature and colorfulness. Alters the whole output. 
