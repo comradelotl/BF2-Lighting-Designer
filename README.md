@@ -1,4 +1,4 @@
-![Tuning note: foliage color temperature upped.](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/screen285.png)
+![Tuning note: foliage color temperature upped.](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/images/screen286.png)
 
 10/26/26 - v 0.21 dynamic terrain brightness boost added
 
