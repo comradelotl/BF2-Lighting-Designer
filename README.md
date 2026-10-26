@@ -125,7 +125,7 @@ Two options.
 Artistic controls for brightness, color temperature and colorfulness. Alters the whole output. 
 This allows you to deliberately diverge from the naturalistic default.
 
-Can for example be used to brighten shadows of a snowy scenes, impose a blue tint or desaturate the whole scene.
+Some terrain needs brightness adjustment. Some foliage can be given a warm undertone.You can also impose a blue tint to or desaturate the whole scene.
 
 Advanced: Shadow compensator (auto) 
 ------------
