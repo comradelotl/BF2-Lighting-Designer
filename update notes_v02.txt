@@ -9,6 +9,7 @@ UI changes:
 - direct/diffuse siblings now sit next to each other
 - Toggle for disabling per-mesh filters
 - post processing controls for brightness, colorfulness, and color temperature
+- added dynamic terrain boost to terrainSun to compensate for dim direct light under clear sky.
 
 ------------------
 Technical changes
