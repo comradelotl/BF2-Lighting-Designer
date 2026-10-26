@@ -1,4 +1,4 @@
-![Tuning note: foliage color temperature upped.](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/images/screen286.png)
+![Tuning note: foliage color temperature upped.](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/images/preview1.png)
 
 10/26/26 - v 0.21 dynamic terrain brightness boost added
 
@@ -47,7 +47,7 @@ Terrain rendering will be the end product of both terrainGI and terrainSun being
 
 This model purposefully assigns staticSunColor a static brightness cut (-30%). I have discovered that giving staticSun an equal share leaves 
 directly lit static surfaces overexposed. 
-Also terrainSun is given a dynamic brightness boost (+25% at noon) that regulated by overcast and sun elevation.
+Also terrainSun is given a dynamic brightness boost (+15% at noon) that regulated by overcast and sun elevation.
 
 
 Preview mode
