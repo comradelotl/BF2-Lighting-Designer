@@ -45,8 +45,9 @@ terrainGI is always mixed in with terrainSun except for cast shadows.
 This is significant because you can't simply use terrainSun to determine ingame terrain color. 
 Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively.
 
-This model purposefully assigns staticSunColor a dimmer color. I have discovered that giving staticSun an equal share leaves 
-directly lit static surfaces overexposed.
+This model purposefully assigns staticSunColor a static brightness cut (-30%). I have discovered that giving staticSun an equal share leaves 
+directly lit static surfaces overexposed. 
+Also terrainSun is given a dynamic brightness boost (+25% at noon) that regulated by overcast and sun elevation.
 
 
 Preview mode
