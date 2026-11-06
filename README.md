@@ -1,12 +1,11 @@
 ![Tuning note: foliage color temperature upped.](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/images/preview1.png)
 
-10/26/26 - v 0.22
+11/6/26 - v 0.23
 
-dynamic terrain brightness boost slider added
-
-side panel scrolling added
-
-foliage ambient color now color temperature control affecting both treeSun and treeAmbient
+- color preview swatches don't clip to white anymore
+- overhauled per-surface brightness harmonization. I have conducted extensive ingame tests for this.
+- fixed overly aggressive desaturation around the horizon
+- specular light colors are fitted to the sun beam. 
 
 
 ------
@@ -52,8 +51,10 @@ terrainGI is always mixed in with terrainSun except for cast shadows.
 This is significant because you can't simply use terrainSun to determine ingame terrain color. 
 Terrain rendering will be the end product of both terrainGI and terrainSun being mixed together additively.
 
-This model purposefully assigns staticSunColor a static brightness cut (-30%). I have discovered that giving staticSun an equal share leaves 
-directly lit static surfaces overexposed. 
+This model purposefully assigns staticSunColor a brightness cut. I have discovered that giving staticSun an equal share leaves 
+directly lit static surfaces overexposed. The reason for this is simple. Statics have a bump map and a detail map, terrain doesn't. 
+Statics clip to white at the input value 2/2/2, terrain clips at 3/3/3. I have conducted empirical tests and worked out transfer
+functions that auto-harmonize per-mesh brightness oriented around dynamic objects (SunColor). 
 
 
 Preview mode
@@ -63,12 +64,19 @@ on: alpha-blends preview swatches with a slate grey reference background. 0/0/0 
 
 off: raw RGB colors. 
 
-Mesh specific filters
+Color filters (mesh specific)
 --------------------
 
 on: all four material types (see output below) have an unique filter added
 
 off: raw sunlight and dome light
+
+Brightness harmonization
+--------------------
+
+on: harmonized per mesh brightness adjustment
+
+off: raw beam and dome brightness (except treeAmbient)
 
 
 Side panel controllers 
@@ -158,13 +166,6 @@ Artistic controls for brightness, color temperature and colorfulness. Alters the
 This allows you to deliberately diverge from the naturalistic default.
 
 Some terrain needs brightness adjustment. Some foliage can be given a warm undertone.You can also impose a blue tint to or desaturate the whole scene.
-
-Advanced: Shadow compensator (auto) 
-------------
-This is a gate that prevents the shadows from blacking out. Because Battlefield 2 has no secondary reflections this parameter 
-automatically shifts an amount of light  from direct light to the indirect light.
-
-treeAmbientColor is excluded from this.
 
 
 ----------------------------------------------------------------------------
