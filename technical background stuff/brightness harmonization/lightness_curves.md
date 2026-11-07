@@ -3,7 +3,7 @@ test measurements
 Method:
 The colors of terrain, static and a vehicle have been replaced with middle grey #808080. Also hemimap has been removed to not skew the vehicle measurement.
 Light was inputted by a constant distance of 0.5. So inputs were 0.5/0.5/0.5, 1.0/1.0/1.0, 1.5/1.5/1.5, etc. 
-Then screenshots were made of representative sample surfaces. A tool was used to measure the OKLCH lightness in screenshots of sample surfaces.
+Then screenshots were made of representative sample surfaces. The image_color_analyzer.html tool was used to measure the OKLCH lightness in screenshots of sample surfaces.
 
 Input | terrain | static | dynamic
 ------|---------|--------|---------
