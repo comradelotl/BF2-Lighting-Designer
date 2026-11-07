@@ -20,3 +20,9 @@ Input | terrain | static | dynamic
 *lightness values of different object classes under the same lighting conditions*
 
 screen310dyn_05 and screen310_05 show different surface under the same lighting conditions and the same input value 0.5/0.5/0.5
+
+
+![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/technical%20background%20stuff/brightness%20harmonization/screen310_05.png)
+
+
+![alt text](https://github.com/comradelotl/BF2-Lighting-Designer/blob/main/technical%20background%20stuff/brightness%20harmonization/screen311.png)
