@@ -97,9 +97,6 @@ I have found that there is no static terrain brightness that works for every map
 
 This is a multiplier of the direct sunlight for terrain. It is auto-regulated by sun elevation and overcast (zero at sunElev=0; oc=4)
 
-I.e. +25% works well for i.e. a sandy Gulf of Oman but not for a grassy Dragon Valley
-
-
 3.) Foliage Ambient Color 
 --------------
 Color temperature control for foliage. 
