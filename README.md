@@ -74,7 +74,7 @@ off: raw sunlight and dome light
 Brightness harmonization
 --------------------
 
-on: harmonized per mesh brightness adjustment
+on: harmonized per mesh brightness adjustment oriented on sunColor that is non-linear and non-parallel. 
 
 off: raw beam and dome brightness (except treeAmbient)
 
